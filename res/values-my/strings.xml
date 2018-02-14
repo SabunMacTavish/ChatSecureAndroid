@@ -153,8 +153,6 @@ The OTR-protocol is compatible with desktop chat clients such as Adium or Pidgin
   <string name="menu_invite_contact">ဖိတ်ခေါ် \u2026</string>
   <string name="contacts_picker_title">ဖိတ်ခေါ်ရမည့် အဆက်အသွယ်များ ရွေးပါ</string>
   <string name="contact_filter_hint">အဆက်အသွယ်အားရှာရန်ရိုက်ပါ</string>
-  <string name="approve_subscription">လက်ခံ</string>
-  <string name="decline_subscription">ငြင်းဆို</string>
   <!--Security: OTR-->
   <string name="menu_otr_start">စာဝှက်စနစ်စတင်</string>
   <string name="menu_otr_stop">စာဝှက်စနစ်ရပ်ဆိုင်း</string>
@@ -185,7 +183,6 @@ The OTR-protocol is compatible with desktop chat clients such as Adium or Pidgin
   <string name="pref_group_looknfeel_title">User Interface</string>
   <string name="menu_locale">ဘာသာစကား</string>
   <string name="KEY_PREF_LANGUAGE_TITLE">ဘာသာစကားများ</string>
-
   <string name="pref_theme_dark">အရောင်ရင့်ရင့် အဆင်အယင်သုံးပါ</string>
   <string name="pref_in_memory_db_title">စာများကို မမ်မိုရီအတွင်းသာ သိမ်းရန်</string>
   <string name="pref_in_memory_db_summary">Only store messages in memory, not on flash storage, to defend against messages being extracted. (May cause lost messages)</string>
@@ -254,7 +251,7 @@ The OTR-protocol is compatible with desktop chat clients such as Adium or Pidgin
   <string name="warning_tor_connect">Tor ကို အသုံးပြုမည် ဖြစ်၍ XMPP \'ဆာဗာ ချိတ်ဆက်မှု\' အိမ်ရှင်စက်အမည်ကို အကောင့်ဆက်တင်ထဲတွင် တိုက်ရိုက် ရိုက်ထည့်ရမည်</string>
   <string name="msg_sent_failed">ဤအကြောင်းကြားချက်အားမပို့နိုင်</string>
   <string name="account_settings_title">အကောင့်ဆက်တင်</string>
-  <string name="pref_default_locale">defLoc</string>
+
   <!--added 2011/09/01-->
   <string name="menu_view_groups">အဖွဲ့များ</string>
   <string name="_open_conversations">ဖွင့်ထားသော စကားဝိုင်းများ</string>

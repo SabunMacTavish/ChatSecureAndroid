@@ -21,6 +21,8 @@
   <string name="btn_next">次へ</string>
   <string name="btn_back">戻る</string>
   <string name="connect">接続</string>
+  <string name="play">再生</string>
+  <string name="setup">セットアップ</string>
   <!--Views-->
   <string name="lock_screen_open">開く</string>
   <string name="title_activity_lock_screen">ChatSecure はロックされました</string>
@@ -33,6 +35,9 @@
   <string name="lock_screen_skip">スキップ &gt;&gt;</string>
   <string name="app_passphrase_view_title_dialog">情報プロンプト</string>
   <string name="app_passphrase_view_password_question">パスワードを入力してください</string>
+  <string name="password_please">パスワードを入力してください…</string>
+  <string name="passphrase">パスフレーズ</string>
+  <string name="passphrase_again">パスフレーズ (再び)</string>
   <!--Views: Setup-->
   <string name="landing_page_title">アカウントを選択してください</string>
   <string name="choose_account_title">アカウントを選択してください</string>
@@ -158,6 +163,7 @@
   <string name="menu_block_contact">連絡先をブロック</string>
   <string name="menu_contact_nickname">連絡先ニックネーム</string>
   <string name="menu_view_blocked">ブロック</string>
+  <string name="nickname">ニックネーム</string>
   <string name="confirm_delete_contact">連絡先「<xliff:g id="USER">%1$s</xliff:g>」を削除します。</string>
   <string name="confirm_block_contact">連絡先「<xliff:g id="USER">%1$s</xliff:g>」をブロックします。</string>
   <string name="confirm_unblock_contact">連絡先「<xliff:g id="USER">%1$s</xliff:g>」のブロックを解除します。</string>
@@ -182,7 +188,7 @@
   <string name="search_button_text">移動</string>
   <string name="empty_chat_list">アクティブなチャットはありません。</string>
   <string name="add_contact_title">連絡先を追加</string>
-  <string name="input_contact_label">招待する人のメールアドレス:</string>
+  <string name="input_contact_label">追加するユーザー名またはJabberID:</string>
   <string name="choose_list_label">リストを選択:</string>
   <string name="invite_instruction">連絡先から追加する名前を入力してください。</string>
   <string name="invite_label">招待状を送る</string>
@@ -211,6 +217,7 @@
   <string name="transfer_in_progress">転送中です</string>
   <string name="accept_transfer_">転送を承認しますか?</string>
   <string name="wants_to_send_you_the_file">ファイルを送信したい</string>
+  <string name="no_connection_for_sending">共有を送信するために利用可能な接続がありません!</string>
   <string name="send">送信</string>
   <string name="compose_hint">メッセージを送信</string>
   <string name="compose_hint_secure">安全にメッセージを送信</string>
@@ -246,9 +253,9 @@
   <string name="contacts_picker_title">招待する連絡先を選択してください</string>
   <string name="contact_filter_hint">入力して、連絡先を検索</string>
   <string name="empty_contact_list">連絡先が見つかりません。\n\n招待するにはタップしてください。</string>
-  <string name="subscription_prompt"><xliff:g id="USER">%1$s</xliff:g>さんが連絡先リストへの登録にあなたを招待しました。</string>
-  <string name="approve_subscription">承認</string>
-  <string name="decline_subscription">拒否</string>
+  <string name="subscription_prompt"><xliff:g id="USER">%1$s</xliff:g> を追加しますか?</string>
+  <string name="approve_subscription">はい</string>
+  <string name="decline_subscription">いいえ</string>
   <string name="approve_subscription_error"><xliff:g id="USER">%1$s</xliff:g>さんからの登録依頼を承認できませんでした。しばらくしてからもう一度試してください。</string>
   <string name="decline_subscription_error"><xliff:g id="USER">%1$s</xliff:g>さんからの登録依頼を拒否できませんでした。しばらくしてからもう一度試してください。</string>
   <!--Security: OTR-->
@@ -280,6 +287,8 @@
   <string name="the_remote_key_fingerprint_has_been_verified_">リモートのフィンガープリントを検証しました!</string>
   <string name="fingerprint_for_you">あなたへのフィンガープリント</string>
   <string name="fingerprint_for_">へのフィンガープリント</string>
+  <string name="install_barcode_scanner_title">バーコードスキャナーをインストールしますか?</string>
+  <string name="install_barcode_scanner_message">このアプリケーションはバーコードスキャナーが必要です。インストールしますか?</string>
   <!--Security: OTR: Verification: QA-->
   <string name="smp_question_title">認証</string>
   <string name="smp_question_summary">彼らが本人であることを検証するために、連絡先に送信する質問、およびあなたが期待する回答を入力してください。</string>
@@ -303,10 +312,12 @@
   <string name="pref_cacheword_timeout_title">パスワード タイムアウト</string>
   <string name="pref_cacheword_timeout_summary">アプリの暗号化がロック解除されるべきまでの時間</string>
   <!--Actions: Settings: General: User Interface-->
+  <string name="pref_linkify_on_tor_title">Tor でクリック可能なリンク</string>
+  <string name="pref_linkify_on_tor_summary">Tor を使用するアカウントで、チャット内のリンクをクリック可能にします (警告、プライバシーが漏れる可能性があります!)</string>
   <string name="pref_group_looknfeel_title">ユーザーインターフェイス</string>
   <string name="menu_locale">言語</string>
   <string name="KEY_PREF_LANGUAGE_TITLE">言語</string>
-
+  <string name="use_system_default">システムデフォルトを使用</string>
   <string name="pref_theme_dark">ダーク テーマを使用</string>
   <string name="pref_theme_dark_summary">アプリのテーマをダークに変更します</string>
   <string name="pref_in_memory_db_title">インメモリ メッセージ ストレージのみ</string>
@@ -318,6 +329,14 @@
   <string name="button_yes_accept_all">はい、すべて承認</string>
   <string name="pref_delete_unsecured_media_title">安全でないメディアを削除</string>
   <string name="pref_delete_unsecured_media_summary">写真やファイルを共有した後、インポート後、元の、安全でないストレージから自動的に削除します</string>
+  <string name="pref_store_media_on_external_storage_title">外部ストレージにメディアを保存</string>
+  <string name="pref_store_media_on_external_storage_summary">チャットセッションのメディアファイルは、暗号化されたコンテナに格納して、内部または外部のストレージに保存できます。</string>
+  <!--Prompt user to resolve missing External Storage media store-->
+  <string name="external_storage_missing_title">外部ストレージが見つかりません</string>
+  <string name="external_storage_missing_message">チャットログはSDカードに保存されましたが、SDカードが存在しません。正しいSDカードを挿入するか、既存のチャットログを削除してもう一度ChatSecureを起動してください。</string>
+  <string name="media_store_file_missing_title">格納したチャットメディアが見つかりません</string>
+  <string name="media_store_file_missing_message">チャットログはSDカードに保存されましたが、ファイルが現在のSDカードで見つかりません。正しいSDカードを挿入するか、既存のチャットログを削除してもう一度ChatSecureを起動してください。</string>
+  <string name="delete_chat_log">チャットログを削除</string>
   <!--Actions: Settings: General: Other Tuning-->
   <string name="pref_group_tuning_title">その他のチューニング</string>
   <string name="start_on_boot">ChatSecure を自動的に開始する</string>
@@ -362,7 +381,7 @@
   <string name="newMessages_label">新しい<xliff:g id="PROVIDER">%1$s</xliff:g>メッセージが届きました</string>
   <string name="num_unread_chats"><xliff:g id="NUMBER">%1$d</xliff:g> 未読のチャット</string>
   <string name="subscription_notify_text"><xliff:g id="user">%s</xliff:g> から新しい友達の招待</string>
-  <string name="file_notify_text">新しいファイル <xliff:g id="FILENAME">%s</xliff:g> <xliff:g id="USER">%s</xliff:g> から</string>
+  <string name="file_notify_text"><xliff:g id="user">%2$s</xliff:g> から、新しいファイル <xliff:g id="filename">%1$s</xliff:g></string>
   <string name="notify_groupchat_label">グループチャットの招待</string>
   <string name="group_chat_invite_notify_text"><xliff:g id="USER">%s</xliff:g> から新しいグループチャットの招待</string>
   <string name="new_messages_notify">新しいメッセージ。送信者</string>
@@ -419,11 +438,12 @@
   <string name="sorry_we_cannot_share_that_file_type">申し訳ありません、そのファイルタイプは共有できません</string>
   <string name="err_otr_share_no_encryption">ファイルを共有するには暗号化を有効にする必要があります</string>
   <string name="please_enable_chat_encryption_to_share_files">ファイルを共有するためチャット暗号化を有効にしてください</string>
+  <string name="unsupported_incoming_data">取得したデータはサポートされていません、共有できません!</string>
   <string name="swipe_alert">ChatSecureは、そのタスクを削除する要求が行われたことを検出しました。 ChatSecureはおそらくクラッシュします。代わりに、アカウント一覧画面からすべてサインアウトのメニュー項目をご利用下さい。</string>
   <string name="there_is_no_viewer_available_for_this_file_format">このファイル形式に使用可能なビューアーがありません</string>
   <string name="please_start_a_secure_conversation_before_scanning_codes">コードをスキャンする前に、安全な会話を開始してください</string>
   <string name="otr_keyring_not_imported_please_check_the_file_exists_in_the_proper_format_and_location">OTR キーリングがインポートされていません; ファイルが適切な形式で、適切な場所に存在することを確認してください</string>
-  <string name="otr_keysync_warning_message">デスクトップ OtrFileConverter ツールから、お使いのデバイスのストレージのルートディレクトリに、\'otr_keystore.ofcaes\' ファイルをコピーしてください</string>
+  <string name="otr_keysync_warning_message">デスクトップ KeySync ツールから、お使いのデバイスのストレージのルートディレクトリに、\'otr_keystore.ofcaes\' ファイルをコピーしてください</string>
   <string name="msg_sent_failed">メッセージを送信できませんでした。</string>
   <string name="disconnected_warning">切断されています。再接続時にメッセージが送信されます。</string>
   <string name="contact_offline_warning"><xliff:g id="USER_0">%1$s</xliff:g>さんはオフラインです。<xliff:g id="USER_1">%1$s</xliff:g>さんがオンラインになったら、メッセージを送信します。</string>
@@ -434,9 +454,8 @@
   <string name="error_chat_file_transfer_title">転送エラー</string>
   <string name="error_chat_file_transfer_body">ストレージのファイルを読み込むことができません</string>
   <string name="error_welcome_database">メジャーエラー: ロック解除やアプリのデータベースをロードすることができません。アプリを再インストールするかデータをクリアデータしてください。</string>
+  <string name="error_no_app_to_handle_url">リンクを処理するアプリがインストールされていません!</string>
   <string name="account_settings_title">アカウント設定</string>
-  <string name="pref_default_locale">defLoc</string>
-  <string name="warning_alpha">警告: これはChatSecureの早期リリースです。まだセキュリティホールやバグを含んでいる可能性があります。</string>
   <!--added 2011/09/01-->
   <string name="menu_view_groups">グループ</string>
   <string name="_open_conversations">会話を開く</string>
@@ -530,7 +549,7 @@
   <string name="i_have_an_existing_xmpp_account">既存のアカウント</string>
   <string name="account_existing_full">指定したJabber/ XMPPサーバーの自分の既存のアカウントに接続します。</string>
   <string name="i_want_to_chat_using_my_google_account">Google アカウント </string>
-  <string name="account_google_full">デバイスに存在するGoogleアカウント(複数)を使用して、他のGoogle+ハングアウト (旧Googleトーク) のユーザとチャットします。</string>
+  <string name="account_google_full">既存のGoogleアカウントを使用して、他のGoogleユーザーとチャットします。</string>
   <string name="i_want_to_chat_on_my_local_wifi_network_bonjour_zeroconf_">WiFi メッシュ チャット</string>
   <string name="account_wifi_full">同じローカルWiFiネットワークやメッシュ上の他の人とチャットします - インターネットやサーバは必要ありません!</string>
   <string name="account_wifi_button">WiFi チャットを有効にする</string>
@@ -545,8 +564,7 @@
   <string name="resent">[再送]</string>
   <string name="unable_to_securely_share_this_file">このファイルを安全に共有することができません</string>
   <string name="install_orbot_">Orbotをインストールしますか?</string>
-  <string name="market_orbot">market://search?q=pname:org.torproject.android</string>
-  <string name="you_must_have_orbot">あなたはOrbotをインストールし、それを介してプロキシ転送を有効化している必要があります。Google Play からインストールしますか?</string>
+  <string name="you_must_have_orbot">あなたはOrbotをインストールし、それを介してプロキシ転送を有効化している必要があります。インストールしますか?</string>
   <string name="always">いつも</string>
   <string name="start_orbot_">Orbotを開始しますか?</string>
   <string name="orbot_doesn_t_appear_to_be_running_would_you_like_to_start_it_up_and_connect_to_tor_">Orbotが実行されていないようです。起動して、Torに接続しますか?</string>
@@ -556,4 +574,5 @@
   <string name="your_keystore_is_corrupted_please_re_install_chatsecure_or_clear_data_for_the_app">キーストアが破損しています。ChatSecureを再インストールするか、アプリの \'データをクリア\' してください</string>
   <string name="you_received_an_unreadable_encrypted_message">受け取った暗号化されたメッセージは読めません</string>
   <string name="i_could_not_decrypt_the_message_you_sent">あなたが送信したメッセージを解読することができませんでした</string>
+  <string name="swipe_hint">&lt; 左や右にスワイプで追加のオプション &gt;</string>
 </resources>

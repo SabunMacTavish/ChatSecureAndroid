@@ -17,6 +17,7 @@
 package info.guardianproject.otr.app.im.provider;
 
 import info.guardianproject.otr.OtrAndroidKeyManagerImpl;
+import info.guardianproject.otr.app.im.app.ContactView;
 import info.guardianproject.otr.app.im.app.ImApp;
 import info.guardianproject.otr.app.im.provider.Imps.Contacts;
 import info.guardianproject.otr.app.im.provider.Imps.Provider;
@@ -136,7 +137,8 @@ public class ImpsProvider extends ContentProvider {
     protected static final int MATCH_OTR_MESSAGES_BY_ACCOUNT = 60;
     protected static final int MATCH_OTR_MESSAGE = 61;
     protected static final int MATCH_OTR_MESSAGES_BY_PACKET_ID = 62;
-
+    protected static final int MATCH_MESSAGES_BY_PACKET_ID = 63;
+    
     protected static final int MATCH_GROUP_MEMBERS = 65;
     protected static final int MATCH_GROUP_MEMBERS_BY_GROUP = 66;
     protected static final int MATCH_AVATARS = 70;
@@ -264,7 +266,7 @@ public class ImpsProvider extends ContentProvider {
         boolean mInMemoryDB = false;
         String mKey = null;
 
-        boolean doCleanup = true;
+        boolean doCleanup = false;
         
         DatabaseHelper(Context context, String key, boolean inMemoryDb) throws Exception {
             super(context, mDatabaseName, null, mDatabaseVersion);
@@ -299,7 +301,8 @@ public class ImpsProvider extends ContentProvider {
                 
                 
                 doCleanup = false;
-            }*/
+            }
+            */
             
             return dbWrite;
         }
@@ -1056,7 +1059,8 @@ public class ImpsProvider extends ContentProvider {
         mUrlMatcher.addURI(authority, "messagesByProvider/#", MATCH_MESSAGES_BY_PROVIDER);
         mUrlMatcher.addURI(authority, "messagesByAccount/#", MATCH_MESSAGES_BY_ACCOUNT);
         mUrlMatcher.addURI(authority, "messages/#", MATCH_MESSAGE);
-
+        mUrlMatcher.addURI(authority, "messagesByPacketId/*", MATCH_MESSAGES_BY_PACKET_ID);
+        
         mUrlMatcher.addURI(authority, "otrMessages", MATCH_OTR_MESSAGES);
         mUrlMatcher.addURI(authority, "otrMessagesByAcctAndContact/#/*",
                 MATCH_OTR_MESSAGES_BY_CONTACT);
@@ -1125,7 +1129,6 @@ public class ImpsProvider extends ContentProvider {
                 boolean inMemoryDb = false;
 
                 mDbHelper = new DatabaseHelper(ctx, pkey, inMemoryDb);
-                OtrAndroidKeyManagerImpl.setKeyStorePassword(pkey);
                 LogCleaner.debug(LOG_TAG, "Opened DB with key - empty=" + pkey.isEmpty());
 
                 Debug.recordTrail(getContext(), EMPTY_KEY_TRAIL_TAG, "" + pkey.isEmpty());
@@ -1927,6 +1930,13 @@ public class ImpsProvider extends ContentProvider {
             ContentValues presenceValues = new ContentValues();
             presenceValues.put(Imps.Presence.PRESENCE_STATUS, Imps.Presence.OFFLINE);
 
+            StringBuffer whereClause = new StringBuffer();
+            whereClause.append(Contacts.USERNAME);
+            whereClause.append("=?");
+            whereClause.append(" AND ");
+            whereClause.append(Contacts.ACCOUNT);
+            whereClause.append("=?");
+            
             for (int i = 0; i < usernameCount; i++) {
                 String username = usernames.get(i);
                 String nickname = nicknames.get(i);
@@ -2000,23 +2010,37 @@ public class ImpsProvider extends ContentProvider {
                     }
                 }
                 */
-
-                rowId = db.insert(TABLE_CONTACTS, USERNAME, contactValues);
-                if (rowId > 0) {
-                    sum++;
-
-                    // seed the presence for the new contact
-                    
-                        log("### seedPresence for contact id " + rowId);
-                    presenceValues.put(Imps.Presence.CONTACT_ID, rowId);
-
-                    try {
-                        db.insert(TABLE_PRESENCE, null, presenceValues);
-                    } catch (android.database.sqlite.SQLiteConstraintException ex) {
-                        LogCleaner.warn(LOG_TAG, "insertBulkContacts: seeding presence caught " + ex);
+                
+                String[] columns = {"_id, username"};
+                String[] whereArgs = {username,account+""};
+                
+                Cursor c = db.query(TABLE_CONTACTS,  columns, whereClause.toString(), whereArgs, null,null,null,null);
+                boolean contactExists = (c != null && c.getCount() > 0);
+                if (c != null) c.close();
+                
+                if (contactExists) 
+                {
+                    int rowsUpdated = db.update(TABLE_CONTACTS, contactValues, whereClause.toString(), whereArgs);
+                }
+                else
+                {
+                    rowId = db.insert(TABLE_CONTACTS, USERNAME, contactValues);
+                    if (rowId > 0) {
+                        sum++;
+    
+                        // seed the presence for the new contact
+                        
+                            log("### seedPresence for contact id " + rowId);
+                        presenceValues.put(Imps.Presence.CONTACT_ID, rowId);
+    
+                        try {
+                            db.insert(TABLE_PRESENCE, null, presenceValues);
+                        } catch (android.database.sqlite.SQLiteConstraintException ex) {
+                            LogCleaner.warn(LOG_TAG, "insertBulkContacts: seeding presence caught " + ex);
+                        }
                     }
                 }
-
+                
                 // yield the lock if anyone else is trying to
                 // perform a db operation here.
                 db.yieldIfContended();
@@ -2262,7 +2286,7 @@ public class ImpsProvider extends ContentProvider {
         }
     }
 
-    private int updateBulkPresence(ContentValues values, String userWhere, String[] whereArgs) {
+    private int updateBulkPresence(ContentValues values, SQLiteDatabase db, String userWhere, String[] whereArgs) {
         ArrayList<String> usernames = getStringArrayList(values, Imps.Contacts.USERNAME);
         int count = usernames.size();
         Long account = values.getAsLong(Imps.Contacts.ACCOUNT);
@@ -2274,6 +2298,7 @@ public class ImpsProvider extends ContentProvider {
         ArrayList<String> clientTypeArray = getStringArrayList(values, Imps.Presence.CLIENT_TYPE);
         ArrayList<String> resourceArray = getStringArrayList(values, Imps.Presence.JID_RESOURCE);
 
+        
         // append username to the selection clause
         StringBuilder buf = new StringBuilder();
 
@@ -2293,7 +2318,10 @@ public class ImpsProvider extends ContentProvider {
 
         // use username LIKE ? for case insensitive comparison
         buf.append(Imps.Contacts.USERNAME);
-        buf.append(" LIKE ?) AND (");
+        buf.append(" LIKE ?)");
+        
+        /*
+        AND (");
 
         buf.append(Imps.Presence.PRIORITY);
         buf.append("<=? OR ");
@@ -2301,13 +2329,14 @@ public class ImpsProvider extends ContentProvider {
         buf.append(" IS NULL OR ");
         buf.append(Imps.Presence.JID_RESOURCE);
         buf.append("=?)");
+        */
 
         String selection = buf.toString();
 
         
             log("updateBulkPresence: selection => " + selection);
 
-        int numArgs = (whereArgs != null ? whereArgs.length + 4 : 4);
+        int numArgs = (whereArgs != null ? whereArgs.length + 2 : 2);
         String[] selectionArgs = new String[numArgs];
         int selArgsIndex = 0;
 
@@ -2316,8 +2345,6 @@ public class ImpsProvider extends ContentProvider {
                 selectionArgs[selArgsIndex] = whereArgs[selArgsIndex];
             }
         }
-
-        final SQLiteDatabase db = getDBHelper().getWritableDatabase();
 
         db.beginTransaction();
         int sum = 0;
@@ -2346,43 +2373,37 @@ public class ImpsProvider extends ContentProvider {
                 } catch (NumberFormatException ex) {
                     LogCleaner.error(LOG_TAG, "[ImProvider] updateBulkPresence: caught",ex);
                 }
-
-                 
-                log("updateBulkPresence[" + i + "] username=" + username + ", priority="
+ 
+                log("updateBulkPresence[" + i + "] account=" + account + " username=" + username + ", priority="
                     + priority + ", mode=" + mode + ", status=" + status + ", resource="
                     + jidResource + ", clientType=" + clientType);
 
-                if (modeArray != null) {
-                    presenceValues.put(Imps.Presence.PRESENCE_STATUS, mode);
-                }
-                if (priorityArray != null) {
-                    presenceValues.put(Imps.Presence.PRIORITY, priority);
-                }
+                presenceValues.put(Imps.Presence.PRESENCE_STATUS, mode);
+                presenceValues.put(Imps.Presence.PRIORITY, priority);                                
                 presenceValues.put(Imps.Presence.PRESENCE_CUSTOM_STATUS, status);
-                if (clientTypeArray != null) {
-                    presenceValues.put(Imps.Presence.CLIENT_TYPE, clientType);
-                }
-
-                if (!TextUtils.isEmpty(jidResource)) {
-                    presenceValues.put(Imps.Presence.JID_RESOURCE, jidResource);
-                }
+                presenceValues.put(Imps.Presence.CLIENT_TYPE, clientType);
+                presenceValues.put(Imps.Presence.JID_RESOURCE, jidResource);
 
                 // fill in the selection args
                 int idx = selArgsIndex;
                 selectionArgs[idx++] = String.valueOf(account);
                 selectionArgs[idx++] = username;
-                selectionArgs[idx++] = String.valueOf(priority);
-                selectionArgs[idx] = jidResource;
-
+                
+                //selectionArgs[idx++] = String.valueOf(priority);
+                //selectionArgs[idx] = jidResource;
+            
                 int numUpdated = db
                         .update(TABLE_PRESENCE, presenceValues, selection, selectionArgs);
-                if (numUpdated == 0) {
-                    // this is really generating a lot of log output that doesn't seem necessary
-                   // LogCleaner.warn(LOG_TAG, "[ImProvider] updateBulkPresence: failed for " + username);
-                } else {
+                
+                if (numUpdated == 0)
+                {
+                    LogCleaner.debug(LOG_TAG, "[ImProvider] updateBulkPresence: " + username + " updated " + numUpdated);
+                }
+                else
+                {            
                     sum += numUpdated;
                 }
-
+                
                 // yield the lock if anyone else is trying to
                 // perform a db operation here.
                 db.yieldIfContended();
@@ -2393,8 +2414,7 @@ public class ImpsProvider extends ContentProvider {
             db.endTransaction();
         }
 
-        
-            log("updateBulkPresence: " + sum + " entries updated");
+        log("updateBulkPresence: " + sum + " entries updated");
         return sum;
     }
 
@@ -2442,7 +2462,7 @@ public class ImpsProvider extends ContentProvider {
         case MATCH_CONTACTS:
         case MATCH_CONTACTS_BAREBONE:
             // Insert into the contacts table
-            rowID = db.insert(TABLE_CONTACTS, "username", initialValues);
+            rowID = db.insert(TABLE_CONTACTS, USERNAME, initialValues);
             if (rowID > 0) {
                 resultUri = Uri.parse(Imps.Contacts.CONTENT_URI + "/" + rowID);
             }
@@ -3571,12 +3591,22 @@ public class ImpsProvider extends ContentProvider {
 
         case MATCH_OTR_MESSAGES_BY_PACKET_ID:
             packetId = decodeURLSegment(url.getPathSegments().get(1));
-            tableToChange = TABLE_MESSAGES; // FIXME these should be going to memory but they do not
+            tableToChange = TABLE_IN_MEMORY_MESSAGES; // FIXME these should be going to memory but they do not
             appendWhere(whereClause, Imps.Messages.PACKET_ID, "=", packetId);
             notifyMessagesContentUri = true;
 
             // Try updating OTR message
             count += db.update(TABLE_IN_MEMORY_MESSAGES, values, whereClause.toString(), whereArgs);
+            break;
+            
+        case MATCH_MESSAGES_BY_PACKET_ID:
+            packetId = decodeURLSegment(url.getPathSegments().get(1));
+            tableToChange = TABLE_MESSAGES; // FIXME these should be going to memory but they do not
+            appendWhere(whereClause, Imps.Messages.PACKET_ID, "=", packetId);
+            notifyMessagesContentUri = true;
+
+            // Try updating OTR message
+            count += db.update(TABLE_MESSAGES, values, whereClause.toString(), whereArgs);
             break;
 
         case MATCH_OTR_MESSAGE:
@@ -3613,7 +3643,7 @@ public class ImpsProvider extends ContentProvider {
             break;
 
         case MATCH_PRESENCE:
-            // log("update presence: where='" + userWhere + "'");
+            log("update presence: where='" + userWhere + "'");
             tableToChange = TABLE_PRESENCE;
             break;
 
@@ -3624,15 +3654,21 @@ public class ImpsProvider extends ContentProvider {
             break;
 
         case MATCH_PRESENCE_BULK:
-            count = updateBulkPresence(values, userWhere, whereArgs);
+            
+            tableToChange = null;
+            
+            count = updateBulkPresence(values, db, userWhere, whereArgs);
             // notify change using the "content://im/contacts" url,
             // so the change will be observed by listeners interested
             // in contacts changes.
-            if (count > 0) {
+            
+            if (count > 0)
+            {
+                getContext().getContentResolver().notifyChange(Imps.Contacts.CONTENT_URI_CHAT_CONTACTS_BY, null);
                 getContext().getContentResolver().notifyChange(Imps.Contacts.CONTENT_URI, null);
+                notifyContactListContentUri = true;
             }
-
-            return count;
+            break;
 
         case MATCH_INVITATION:
             tableToChange = TABLE_INVITATIONS;
@@ -3682,17 +3718,17 @@ public class ImpsProvider extends ContentProvider {
             appendWhere(whereClause, idColumnName, "=", changedItemId);
         }
 
-        
-            log("update " + url + " WHERE " + whereClause);
+        log("update " + url + " WHERE " + whereClause);
 
-        count += db.update(tableToChange, values, whereClause.toString(), whereArgs);
+        if (tableToChange != null)
+            count += db.update(tableToChange, values, whereClause.toString(), whereArgs);
 
         if (count > 0) {
             ContentResolver resolver = getContext().getContentResolver();
 
             // In most case, we query contacts with presence and chats joined, thus
             // we should also notify that contacts changes when presence or chats changed.
-            if (match == MATCH_CHATS || match == MATCH_CHATS_ID || match == MATCH_PRESENCE
+            if (match == MATCH_CHATS || match == MATCH_CHATS_ID || match == MATCH_PRESENCE || match == MATCH_PRESENCE_BULK
                 || match == MATCH_PRESENCE_ID || match == MATCH_CONTACTS_BAREBONE) {
                 resolver.notifyChange(Imps.Contacts.CONTENT_URI, null);
             }

@@ -116,9 +116,6 @@ La app apoya qualquier servicio de chat que utilizca Jabber o el protocolo XMPP,
   <string name="menu_invite_contact">Invitar a…</string>
   <string name="contacts_picker_title">Seleccionar contacto(s) para invitar</string>
   <string name="contact_filter_hint">Escribir para buscar contacto</string>
-  <string name="subscription_prompt"><xliff:g id="USER">%1$s</xliff:g> te ha invitado a estar en su lista de contactos.</string>
-  <string name="approve_subscription">Aceptar</string>
-  <string name="decline_subscription">Rechazar</string>
   <string name="approve_subscription_error">No se ha podido aprobar la suscripción de <xliff:g id="USER">%1$s</xliff:g>. Vuelve a intentarlo más tarde.</string>
   <string name="decline_subscription_error">No se ha podido declinar la suscripción de <xliff:g id="USER">%1$s</xliff:g>. Vuelve a intentarlo más tarde.</string>
   <!--Security: OTR-->

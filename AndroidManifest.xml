@@ -2,8 +2,8 @@
     package="info.guardianproject.otr.app.im"
     android:installLocation="auto"
     android:sharedUserLabel="@string/perm_label"
-    android:versionCode="1409002"
-    android:versionName="14.0.9" >
+    android:versionCode="1423001"
+    android:versionName="14.2.3" >
 
     <supports-screens
         android:anyDensity="true"
@@ -57,60 +57,13 @@
         android:allowBackup="false"
         android:icon="@drawable/ic_launcher"
         android:label="@string/im_label"
+        android:description="@string/app_description"
         android:theme="@style/AppTheme" >
         <activity android:name=".app.WelcomeActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:host="*" />
-                <data android:scheme="file" />
-                <data android:scheme="content" />
-                <!-- this crack smoking pattern is required to match file extensions in folders -->
-                <data android:pathPattern=".*\\.ofcaes" />
-                <data android:pathPattern=".*\\..*\\.ofcaes" />
-                <data android:pathPattern=".*\\..*\\..*\\.ofcaes" />
-                <data android:pathPattern=".*\\..*\\..*\\..*\\.ofcaes" />
-                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\.ofcaes" />
-                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\.ofcaes" />
-                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\..*\\.ofcaes" />
-                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\..*\\..*\\.ofcaes" />
-                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\..*\\..*\\..*\\.ofcaes" />
-                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\..*\\..*\\..*\\..*\\.ofcaes" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:host="*" />
-                <data android:scheme="file" />
-                <data android:scheme="content" />
-                <!--
-                The ultimate in crack smoking!  Some apps will only respect these file associations
-                if the mimeType is not set, and other apps will only respect them if mimeType is set
-                to */*.  Therefore we have two whole copies of the same thing, besides setting the mimeType. 
-                -->
-                <data android:mimeType="*/*" />
-                <!-- this crack smoking pattern is required to match file extensions in folders -->
-                <data android:pathPattern=".*\\.ofcaes" />
-                <data android:pathPattern=".*\\..*\\.ofcaes" />
-                <data android:pathPattern=".*\\..*\\..*\\.ofcaes" />
-                <data android:pathPattern=".*\\..*\\..*\\..*\\.ofcaes" />
-                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\.ofcaes" />
-                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\.ofcaes" />
-                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\..*\\.ofcaes" />
-                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\..*\\..*\\.ofcaes" />
-                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\..*\\..*\\..*\\.ofcaes" />
-                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\..*\\..*\\..*\\..*\\.ofcaes" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SENDTO" />
@@ -185,8 +138,17 @@
             android:name=".ui.AboutActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.AppPassphraseActivity"
-            android:exported="false" />
+            android:name=".app.PanicResponderActivity"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.NoDisplay">
+            <intent-filter>
+                <action android:name="info.guardianproject.panic.action.TRIGGER" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".app.ExitActivity"
+            android:theme="@android:style/Theme.NoDisplay" />
 
         <service
             android:name=".plugin.xmpp.XmppImPlugin"
@@ -315,25 +277,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".app.ContactListActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:exported="false" >
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="info.guardianproject.otr.app.im.IMPS_CATEGORY" />
-
-                <data android:mimeType="vnd.android.cursor.dir/imps-contacts" />
-
-                <action android:name="android.intent.action.SEARCH" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.app.searchable"
-                android:resource="@xml/searchable" />
-        </activity>
-        <activity
             android:name=".app.AddContactActivity"
             android:exported="false"
             android:label="@string/add_contact_title" />
@@ -372,11 +315,15 @@
             android:label="@string/contacts_picker_title" >
             <intent-filter>
                 <action android:name="android.intent.action.PICK" />
-
                 <category android:name="android.intent.category.DEFAULT" />
-
                 <data android:mimeType="vnd.android.cursor.dir/imps-contacts" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.PICK" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="vnd.android.cursor.dir/imps-chats" />
+            </intent-filter>
+            
         </activity>
         <activity
             android:name=".app.BlockedContactsActivity"
@@ -459,6 +406,10 @@
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/title_activity_lock_screen" >
         </activity>
+
+        <activity
+            android:name=".app.MissingChatFileStoreActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
 
         <service
             android:name="info.guardianproject.cacheword.CacheWordService"

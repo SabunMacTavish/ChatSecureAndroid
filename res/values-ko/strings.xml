@@ -147,9 +147,6 @@
   <string name="menu_invite_contact">초대\u2026</string>
   <string name="contacts_picker_title">초대할 연락처 선택</string>
   <string name="contact_filter_hint">입력하여 연락처 찾기</string>
-  <string name="subscription_prompt"><xliff:g id="USER">%1$s</xliff:g>님이 연락처 목록에 올리기 위해 초대하셨습니다.</string>
-  <string name="approve_subscription">수락</string>
-  <string name="decline_subscription">거부</string>
   <string name="approve_subscription_error"><xliff:g id="USER">%1$s</xliff:g>님의 구독을 승인할 수 없습니다. 잠시 후에 다시 시도해 주세요.</string>
   <string name="decline_subscription_error"><xliff:g id="USER">%1$s</xliff:g>님의 구독을 거부할 수 없습니다. 잠시 후에 다시 시도해 주세요.</string>
   <!--Security: OTR-->
@@ -173,7 +170,6 @@
   <!--Actions: Settings: General: User Interface-->
   <string name="menu_locale">언어</string>
   <string name="KEY_PREF_LANGUAGE_TITLE">언어</string>
-
   <!--Actions: Settings: General: Other Tuning-->
   <string name="hide_offline_contacts">오프라인 주소록 숨기기</string>
   <!--Actions: Settings: General: Notifications-->

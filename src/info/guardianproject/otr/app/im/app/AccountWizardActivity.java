@@ -22,7 +22,6 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.PixelFormat;
@@ -31,16 +30,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.os.RemoteException;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
-import android.util.Log;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
@@ -49,27 +44,23 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 import com.viewpagerindicator.PageIndicator;
 
 import info.guardianproject.onionkit.ui.OrbotHelper;
 import info.guardianproject.otr.OtrAndroidKeyManagerImpl;
 import info.guardianproject.otr.OtrDebugLogger;
-import info.guardianproject.otr.app.im.IImConnection;
 import info.guardianproject.otr.app.im.R;
 import info.guardianproject.otr.app.im.plugin.xmpp.auth.GTalkOAuth2;
 import info.guardianproject.otr.app.im.provider.Imps;
-import info.guardianproject.util.BackgroundBitmapLoaderTask;
-
 import java.util.List;
 import java.util.UUID;
 
-public class AccountWizardActivity extends ThemeableActivity implements View.OnCreateContextMenuListener {
-
+public class AccountWizardActivity extends ThemeableActivity {
     private static final String TAG = ImApp.LOG_TAG;
 
     private AccountAdapter mAdapter;
@@ -131,13 +122,6 @@ public class AccountWizardActivity extends ThemeableActivity implements View.OnC
 
         PageIndicator titleIndicator = (PageIndicator) findViewById(R.id.indicator);
         titleIndicator.setViewPager(mPager);
-
-        if (!mHasBackground) {
-            LinearLayout rootView = (LinearLayout) findViewById(R.id.RootView);
-            BackgroundBitmapLoaderTask task = new BackgroundBitmapLoaderTask(this, rootView);
-            task.execute(R.drawable.csbackground);
-        }
-
     }
 
     AccountAdapter getAdapter() {
@@ -196,7 +180,6 @@ public class AccountWizardActivity extends ThemeableActivity implements View.OnC
 
     protected void gotoChats()
     {
-
         Intent intent = new Intent(this, NewChatActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtra("showaccounts", true);
@@ -204,59 +187,11 @@ public class AccountWizardActivity extends ThemeableActivity implements View.OnC
         finish();
     }
 
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    private void doHardShutdown() {
-
-        for (IImConnection conn : mApp.getActiveConnections())
-        {
-               try {
-                conn.logout();
-            } catch (RemoteException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-
-        Intent intent = new Intent(getApplicationContext(), WelcomeActivity.class);
-        // Request lock
-        intent.putExtra("doLock", true);
-        // Clear the backstack
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        if (Build.VERSION.SDK_INT >= 11)
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
-   }
-    public void signOut(final long accountId) {
-        // Remember that the user signed out and do not auto sign in until they
-        // explicitly do so
-        setKeepSignedIn(accountId, false);
-
-        try {
-            IImConnection conn = mApp.getConnectionByAccount(accountId);
-            if (conn != null) {
-                conn.logout();
-            }
-        } catch (Exception ex) {
-            Log.e(TAG, "signOut failed", ex);
-        }
-    }
-
-
-    private void setKeepSignedIn(final long accountId, boolean signin) {
-        Uri mAccountUri = ContentUris.withAppendedId(Imps.Account.CONTENT_URI, accountId);
-        ContentValues values = new ContentValues();
-        values.put(Imps.Account.KEEP_SIGNED_IN, signin);
-        getContentResolver().update(mAccountUri, values, null, null);
-    }
-
-
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
         return true;
     }
-
 
     private String[][] mAccountList;
     private String mNewUser;
@@ -270,12 +205,11 @@ public class AccountWizardActivity extends ThemeableActivity implements View.OnC
     {
         int i = 0;
         int accountProviders = 0;
-        List<String> listProviders = helper.getProviderNames();
-
+        
         mGoogleAccounts = AccountManager.get(this).getAccountsByType(GTalkOAuth2.TYPE_GOOGLE_ACCT);
 
         if (mGoogleAccounts.length > 0) {
-            accountProviders = listProviders.size() + 3; //potentialProviders + google + create account + burner
+            accountProviders = 5; //potentialProviders + google + create account + burner
 
             mAccountList = new String[accountProviders][3];
 
@@ -284,7 +218,7 @@ public class AccountWizardActivity extends ThemeableActivity implements View.OnC
             mAccountList[i][2] = GOOGLE_ACCOUNT;
             i++;
         } else {
-            accountProviders = listProviders.size() + 2; //potentialProviders + create account + burner
+            accountProviders = 4;//listProviders.size() + 2; //potentialProviders + create account + burner
 
             mAccountList = new String[accountProviders][3];
         }
@@ -312,60 +246,11 @@ public class AccountWizardActivity extends ThemeableActivity implements View.OnC
 
     }
 
-    /* CHANGE phoenix_nz - add "Create Account" to List */
-    /**
-    void showExistingAccountListDialog() {
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.account_select_type);
-
-
-
-        builder.setItems(mAccountList, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int pos) {
-
-                if (pos == 0) //xmpp
-                {
-                    //otherwise support the actual plugin-type
-                    showSetupAccountForm(helper.getProviderNames().get(0),null, null, false,helper.getProviderNames().get(0),false);
-                }
-                else if (pos == mAccountList.length-2) //create account
-                {
-                    String username = "";
-                    String passwordPlaceholder = "password";//zeroconf doesn't need a password
-                    showSetupAccountForm(helper.getProviderNames().get(1),username,passwordPlaceholder, false,helper.getProviderNames().get(1),true);
-                }
-                else if (pos == mAccountList.length-3) //create account
-                {
-                    showSetupAccountForm(helper.getProviderNames().get(0), null, null, true, null,false);
-                }
-                else if (pos == mAccountList.length-1) //create account
-                {
-                    createBurnerAccount();
-                }
-                else
-                {
-                    addGoogleAccount(mGoogleAccounts[pos-1].name);
-                }
-            }
-        });
-        AlertDialog dialog = builder.create();
-        dialog.show();
-
-    }
-    */
-
-    private Handler mHandlerGoogleAuth = new Handler ()
-    {
-
+    private Handler mHandlerGoogleAuth = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-
             super.handleMessage(msg);
-
-           // Log.d(TAG,"Got handler callback from auth: " + msg.what);
         }
-
     };
 
     private void addGoogleAccount ()
@@ -417,16 +302,13 @@ public class AccountWizardActivity extends ThemeableActivity implements View.OnC
                     }
                 });
         builderSingle.show();
-
-
-
     }
 
 
     public void showSetupAccountForm (String providerType, String username, String token, boolean createAccount, String formTitle, boolean hideTor)
     {
         long providerId = helper.createAdditionalProvider(providerType);//xmpp
-        mApp.resetProviderSettings(); //clear cached provider list
+    //    mApp.resetProviderSettings(); //clear cached provider list
 
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_INSERT);
@@ -480,156 +362,6 @@ public class AccountWizardActivity extends ThemeableActivity implements View.OnC
 
     }
 
-
-
-
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-        /*
-        AdapterView.AdapterContextMenuInfo info;
-        try {
-            info = (AdapterView.AdapterContextMenuInfo) menuInfo;
-        } catch (ClassCastException e) {
-            Log.e(TAG, "bad menuInfo", e);
-            return;
-        }
-
-        Cursor providerCursor = (Cursor) getListAdapter().getItem(info.position);
-        menu.setHeaderTitle(providerCursor.getString(PROVIDER_FULLNAME_COLUMN));
-
-        if (providerCursor.isNull(ACTIVE_ACCOUNT_ID_COLUMN)) {
-            menu.add(0, ID_ADD_ACCOUNT, 0, R.string.menu_edit_account);
-            menu.add(0, ID_REMOVE_ACCOUNT, 0, R.string.menu_remove_account).setIcon(
-                    android.R.drawable.ic_menu_delete);
-            return;
-        }
-
-        long providerId = providerCursor.getLong(PROVIDER_ID_COLUMN);
-        boolean isLoggingIn = isSigningIn(providerCursor);
-        boolean isLoggedIn = isSignedIn(providerCursor);
-
-        BrandingResources brandingRes = mApp.getBrandingResource(providerId);
-        //menu.add(0, ID_VIEW_CONTACT_LIST, 0,
-          //      brandingRes.getString(BrandingResourceIDs.STRING_MENU_CONTACT_LIST));
-
-        if (isLoggedIn) {
-            menu.add(0, ID_SIGN_OUT, 0, R.string.menu_sign_out).setIcon(
-                    android.R.drawable.ic_menu_close_clear_cancel);
-        } else if (isLoggingIn) {
-            menu.add(0, ID_SIGN_OUT, 0, R.string.menu_cancel_signin).setIcon(
-                    android.R.drawable.ic_menu_close_clear_cancel);
-        } else {
-            menu.add(0, ID_SIGN_IN, 0, R.string.sign_in)
-            // TODO .setIcon(info.guardianproject.otr.app.internal.R.drawable.ic_menu_login)
-            ;
-        }
-
-        boolean isAccountEditable = providerCursor.getInt(ACTIVE_ACCOUNT_LOCKED) == 0;
-        if (isAccountEditable && !isLoggingIn && !isLoggedIn) {
-            menu.add(0, ID_EDIT_ACCOUNT, 0, R.string.menu_edit_account).setIcon(
-                    android.R.drawable.ic_menu_edit);
-            menu.add(0, ID_REMOVE_ACCOUNT, 0, R.string.menu_remove_account).setIcon(
-                    android.R.drawable.ic_menu_delete);
-        }*/
-    }
-
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public boolean onContextItemSelected(android.view.MenuItem item) {
-        /*
-        AdapterView.AdapterContextMenuInfo info;
-        try {
-            info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        } catch (ClassCastException e) {
-            Log.e(TAG, "bad menuInfo", e);
-            return false;
-        }
-
-        long providerId = info.id;
-        Cursor providerCursor = (Cursor) getListAdapter().getItem(info.position);
-        long accountId = providerCursor.getLong(ACTIVE_ACCOUNT_ID_COLUMN);
-
-        mProviderCursor.moveToPosition(info.position);
-                    Intent intent = new Intent(getContext(), NewChatActivity.class);
-                    intent.putExtra(ImServiceConstants.EXTRA_INTENT_ACCOUNT_ID, mAccountId);
-                    getContext().startActivity(intent);
-
-        switch (item.getItemId()) {
-        case ID_EDIT_ACCOUNT: {
-            startActivity(getEditAccountIntent());
-            return true;
-        }
-
-        case ID_REMOVE_ACCOUNT: {
-            Uri accountUri = ContentUris.withAppendedId(Imps.Account.CONTENT_URI, accountId);
-            getContentResolver().delete(accountUri, null, null);
-            Uri providerUri = ContentUris.withAppendedId(Imps.Provider.CONTENT_URI, providerId);
-            getContentResolver().delete(providerUri, null, null);
-            // Requery the cursor to force refreshing screen
-            providerCursor.requery();
-            return true;
-        }
-
-        case ID_VIEW_CONTACT_LIST: {
-            Intent intent = getViewContactsIntent();
-            startActivity(intent);
-            return true;
-        }
-        case ID_ADD_ACCOUNT: {
-
-            showNewAccountListDialog();
-
-            return true;
-        }
-
-        case ID_SIGN_IN: {
-            signIn(accountId);
-            return true;
-        }
-
-        case ID_SIGN_OUT: {
-            // TODO: progress bar
-            signOut(accountId);
-            return true;
-        }
-
-        }
-    */
-
-        return false;
-    }
-
-    /*
-    Intent getCreateAccountIntent() {
-        Intent intent = new Intent();
-        intent.setAction(Intent.ACTION_INSERT);
-
-        long providerId = mProviderCursor.getLong(PROVIDER_ID_COLUMN);
-        intent.setData(ContentUris.withAppendedId(Imps.Provider.CONTENT_URI, providerId));
-        intent.addCategory(getProviderCategory(mProviderCursor));
-        return intent;
-    }*/
-
-
-    /*
-    Intent getViewChatsIntent() {
-        Intent intent = new Intent(this, ChatListActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra(ImServiceConstants.EXTRA_INTENT_ACCOUNT_ID, mProviderCursor.getLong(ACTIVE_ACCOUNT_ID_COLUMN));
-        return intent;
-    }*/
-
-    /*
-    private String getProviderCategory(Cursor cursor) {
-        return cursor.getString(PROVIDER_CATEGORY_COLUMN);
-    }*/
-
-    static void log(String msg) {
-        Log.d(TAG, "[LandingPage]" + msg);
-    }
-
-
     private final class MyHandler extends SimpleAlertHandler {
 
         public MyHandler(Activity activity) {
@@ -650,30 +382,12 @@ public class AccountWizardActivity extends ThemeableActivity implements View.OnC
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == IntentIntegrator.REQUEST_CODE)
-        {
-
-          Object keyMan = null;
-          boolean keyStoreImported = false;
-
-            try {
-
-                keyStoreImported = OtrAndroidKeyManagerImpl.handleKeyScanResult(requestCode, resultCode, data, this);
-
-            } catch (Exception e) {
-                OtrDebugLogger.log("error importing keystore",e);
+        if (requestCode == IntentIntegrator.REQUEST_CODE) {
+            IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode,
+                    data);
+            if (scanResult != null) {
+                OtrAndroidKeyManagerImpl.handleKeyScanResult(scanResult.getContents(), this);
             }
-
-            if (keyStoreImported)
-            {
-                Toast.makeText(this, R.string.successfully_imported_otr_keyring, Toast.LENGTH_SHORT).show();
-            }
-            else
-            {
-                Toast.makeText(this, R.string.otr_keyring_not_imported_please_check_the_file_exists_in_the_proper_format_and_location, Toast.LENGTH_SHORT).show();
-
-            }
-
         }
         else if (requestCode == REQUEST_CREATE_ACCOUNT)
         {

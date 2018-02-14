@@ -97,7 +97,8 @@ public class AccountActivity extends ActionBarActivity {
     public final static String DEFAULT_SERVER_DUKGO = "dukgo.com";
     public final static String ONION_JABBERCCC = "okj7xc6j2szr2y75.onion";
     public final static String ONION_CALYX = "ijeeynrc6x2uy5ob.onion";
-
+    
+    private static final String USERNAME_VALIDATOR = "[^a-z0-9\\.\\-_\\+]";
     //    private static final int ACCOUNT_KEEP_SIGNED_IN_COLUMN = 4;
     //    private static final int ACCOUNT_LAST_LOGIN_STATE = 5;
 
@@ -123,8 +124,6 @@ public class AccountActivity extends ActionBarActivity {
     String mDomain = "";
     int mPort = 0;
     private String mOriginalUserAccount = "";
-
-    private final static int DEFAULT_PORT = 5222;
 
     IOtrChatSession mOtrChatSession;
     private SignInHelper mSignInHelper;
@@ -190,9 +189,9 @@ public class AccountActivity extends ActionBarActivity {
             String authority = uri.getAuthority();
             String[] userpass_host = authority.split("@");
             String[] user_pass = userpass_host[0].split(":");
-            mUserName = user_pass[0];
+            mUserName = user_pass[0].toLowerCase(Locale.getDefault());
             String pass = user_pass[1];
-            mDomain = userpass_host[1];
+            mDomain = userpass_host[1].toLowerCase(Locale.getDefault());
             mPort = 0;
             final boolean regWithTor = i.getBooleanExtra("useTor", false);
 
@@ -291,6 +290,9 @@ public class AccountActivity extends ActionBarActivity {
                 mRememberPass.setChecked(!cursor.isNull(ACCOUNT_PASSWORD_COLUMN));
                 mUseTor.setChecked(settings.getUseTor());
                 mBtnQrDisplay.setVisibility(View.VISIBLE);
+                
+                mPort = settings.getPort();
+                
             } finally {
                 settings.close();
                 cursor.close();
@@ -671,7 +673,7 @@ public class AccountActivity extends ActionBarActivity {
     private void checkUserChanged() {
         if (mEditUserAccount != null)
         {
-            String username = mEditUserAccount.getText().toString().trim();
+            String username = mEditUserAccount.getText().toString().trim().toLowerCase();
 
             if ((!username.equals(mOriginalUserAccount)) && parseAccount(username)) {
                 //Log.i(TAG, "Username changed: " + mOriginalUserAccount + " != " + username);
@@ -687,44 +689,13 @@ public class AccountActivity extends ActionBarActivity {
     boolean parseAccount(String userField) {
         boolean isGood = true;
         String[] splitAt = userField.trim().split("@");
-        mUserName = splitAt[0];
+        mUserName = splitAt[0].toLowerCase(Locale.ENGLISH).replaceAll(USERNAME_VALIDATOR, "");
         mDomain = "";
-        mPort = 0;
+        
 
         if (splitAt.length > 1) {
-            mDomain = splitAt[1].toLowerCase(Locale.US);
-            String[] splitColon = mDomain.split(":");
-            mDomain = splitColon[0];
-            if (splitColon.length > 1) {
-                try {
-                    mPort = Integer.parseInt(splitColon[1]);
-                } catch (NumberFormatException e) {
-                    // TODO move these strings to strings.xml
-                    isGood = false;
-                    Toast.makeText(
-                            AccountActivity.this,
-                            "The port value '" + splitColon[1]
-                                    + "' after the : could not be parsed as a number!",
-                            Toast.LENGTH_LONG).show();
-                }
-            }
+            mDomain = splitAt[1].toLowerCase(Locale.ENGLISH);
         }
-
-        //its okay if domain is null;
-
-//        if (mDomain == null) {
-  //          isGood = false;
-            //Toast.makeText(AccountActivity.this,
-            //	R.string.account_wizard_no_domain_warning,
-            //	Toast.LENGTH_LONG).show();
-    //    }
-        /*//removing requirement of a . in the domain
-        else if (mDomain.indexOf(".") == -1) {
-            isGood = false;
-            //	Toast.makeText(AccountActivity.this,
-            //		R.string.account_wizard_no_root_domain_warning,
-            //	Toast.LENGTH_LONG).show();
-        }*/
 
         return isGood;
     }
@@ -753,7 +724,7 @@ public class AccountActivity extends ActionBarActivity {
         settings.setRequireTls(true);
         settings.setTlsCertVerify(true);
         settings.setAllowPlainAuth(false);
-        settings.setPort(DEFAULT_PORT);
+        settings.setPort(port);
 
         if (domain.equals("gmail.com")) {
             // Google only supports a certain configuration for XMPP:

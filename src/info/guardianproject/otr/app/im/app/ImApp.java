@@ -102,8 +102,8 @@ public class ImApp extends Application {
     public static final String IMPS_CATEGORY = "info.guardianproject.otr.app.im.IMPS_CATEGORY";
     public static final String ACTION_QUIT = "info.guardianproject.otr.app.im.QUIT";
 
-    public static final int DEFAULT_AVATAR_WIDTH = 128;
-    public static final int DEFAULT_AVATAR_HEIGHT = 128;
+    public static final int DEFAULT_AVATAR_WIDTH = 64;
+    public static final int DEFAULT_AVATAR_HEIGHT = 64;
 
     public static final String HOCKEY_APP_ID = "2fa3b9252319e47367f1f125bb3adcd1";
 
@@ -118,8 +118,6 @@ public class ImApp extends Application {
     public static final String DEFAULT_XMPP_RESOURCE = "ChatSecure";
     public static final int DEFAULT_XMPP_PRIORITY = 20;
     public static final String DEFAULT_XMPP_OTR_MODE = "auto";
-
-    public static final String DEFAULT_GROUPCHAT_SERVER = "conference.dukgo.com";
 
     private Locale locale = null;
 
@@ -255,8 +253,9 @@ public class ImApp extends Application {
 
         PRNGFixes.apply(); //Google's fix for SecureRandom bug: http://android-developers.blogspot.com/2013/08/some-securerandom-thoughts.html
 
+        // load these libs up front to shorten the delay after typing the passphrase
         SQLiteDatabase.loadLibs(getApplicationContext());
-        VirtualFileSystem.get().isMounted(); //use this to trigger loadLibs
+        VirtualFileSystem.get().isMounted();
 
         mConnections = new HashMap<Long, IImConnection>();
         mApplicationContext = this;
@@ -358,7 +357,7 @@ public class ImApp extends Application {
 
         Configuration config = getResources().getConfiguration();
 
-        String lang = settings.getString(getString(R.string.pref_default_locale), "");
+        String lang = settings.getString(getString(R.string.key_default_locale_pref), "");
 
 
         if ("".equals(lang)) {
@@ -368,7 +367,7 @@ public class ImApp extends Application {
                 if (configuredLocale != null && !"CHOOSE".equals(configuredLocale)) {
                     lang = configuredLocale;
                     Editor editor = settings.edit();
-                    editor.putString(getString(R.string.pref_default_locale), lang);
+                    editor.putString(getString(R.string.key_default_locale_pref), lang);
                     editor.apply();
                 }
             }
@@ -377,6 +376,7 @@ public class ImApp extends Application {
         if (!"".equals(lang) && !config.locale.getLanguage().equals(lang)) {
             locale = new Locale(lang);
             config.locale = locale;
+            Locale.setDefault(locale);
             getResources().updateConfiguration(config, getResources().getDisplayMetrics());
         }
 
@@ -396,6 +396,7 @@ public class ImApp extends Application {
             config.setLocale(locale);
         else
             config.locale = locale;
+        Locale.setDefault(locale);
         getResources().updateConfiguration(config, getResources().getDisplayMetrics());
 
         /* Set the preference after setting the locale in case something goes
@@ -403,7 +404,7 @@ public class ImApp extends Application {
         preferences, otherwise ChatSecure will be stuck in a crash loop. */
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         Editor prefEdit = prefs.edit();
-        prefEdit.putString(context.getString(R.string.pref_default_locale), language);
+        prefEdit.putString(context.getString(R.string.key_default_locale_pref), language);
         prefEdit.apply();
     }
 
@@ -579,9 +580,10 @@ public class ImApp extends Application {
     }
 
     /** Used to reset the provider settings if a reload is required. */
+    /*
     public void resetProviderSettings() {
         mProviders = null;
-    }
+    }*/
 
     // For testing
     public void setImProviderSettings(HashMap<Long, ProviderDef> providers) {

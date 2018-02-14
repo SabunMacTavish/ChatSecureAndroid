@@ -23,8 +23,10 @@ public class OtrChatSessionAdapter extends Stub {
 
     private SessionID getSessionID ()
     {
-
-        return _chatManager.getSessionId(_localUser, _remoteUser);
+        if (_chatManager != null)
+            return _chatManager.getSessionId(_localUser, _remoteUser);
+        else
+            return null;
     }
 
     public void startChatEncryption() throws RemoteException {
@@ -146,12 +148,20 @@ public class OtrChatSessionAdapter extends Stub {
 
     @Override
     public String getLocalUserId() throws RemoteException {
-        return getSessionID ().getLocalUserId();
+        SessionID sid = getSessionID ();
+        if (sid != null)
+            return sid.getLocalUserId();
+        else
+            return null;
     }
 
     @Override
     public String getRemoteUserId() throws RemoteException {
-        return getSessionID ().getRemoteUserId();
+        SessionID sid = getSessionID ();
+        if (sid != null)
+            return sid.getRemoteUserId();
+        else
+            return null;
     }
 
 }

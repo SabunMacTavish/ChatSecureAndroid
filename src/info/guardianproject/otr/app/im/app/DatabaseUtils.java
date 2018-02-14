@@ -69,7 +69,7 @@ public class DatabaseUtils {
 
         String[] projection =  {Imps.Contacts.AVATAR_DATA};
         String[] args = {address};
-        String query = "username LIKE ?";
+        String query = Imps.Contacts.USERNAME + " LIKE ?";
         Cursor cursor = cr.query(Imps.Contacts.CONTENT_URI,projection,
              query, args, Imps.Contacts.DEFAULT_SORT_ORDER);
 
@@ -160,6 +160,8 @@ public class DatabaseUtils {
         values.put(Imps.Avatars.ACCOUNT, accountId);
         values.put(Imps.Avatars.HASH, hash);
         resolver.insert(updateUri, values);
+        
+        
 
     }
 
@@ -172,8 +174,13 @@ public class DatabaseUtils {
         options.inSampleSize = calculateInSampleSize(options, width, height);
         options.inJustDecodeBounds = false;
         Bitmap b = BitmapFactory.decodeByteArray(data, 0, data.length,options);
-        RoundedAvatarDrawable avatar = new RoundedAvatarDrawable(b);
-        return avatar;
+        if (b != null)
+        {
+            RoundedAvatarDrawable avatar = new RoundedAvatarDrawable(b);
+            return avatar;
+        }
+        else
+            return null;
     }
 
     public static int calculateInSampleSize(

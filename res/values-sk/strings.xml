@@ -123,8 +123,6 @@
   <string name="menu_invite_contact">Prizvať\u2026</string>
   <string name="contacts_picker_title">Vyberte kontakt (y) vyzvať</string>
   <string name="contact_filter_hint">Typ nájsť kontakt</string>
-  <string name="approve_subscription">Prijať</string>
-  <string name="decline_subscription">Pokles</string>
   <!--Security: OTR-->
   <string name="menu_otr_start">Štart Šifrovania</string>
   <string name="menu_otr_stop">Stop Šifrovania</string>

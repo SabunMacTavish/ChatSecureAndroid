@@ -34,7 +34,6 @@ import info.guardianproject.util.BackgroundBitmapLoaderTask;
 import info.guardianproject.util.Languages;
 
 import java.security.GeneralSecurityException;
-import org.apache.commons.codec.binary.Hex;
 
 public class LockScreenActivity extends ThemeableActivity implements ICacheWordSubscriber {
     private static final String TAG = "LockScreenActivity";
@@ -110,11 +109,6 @@ public class LockScreenActivity extends ThemeableActivity implements ICacheWordS
             }
         });
 
-        if (!mHasBackground) {
-            LinearLayout llRoot = (LinearLayout) findViewById(R.id.llRoot);
-            BackgroundBitmapLoaderTask task = new BackgroundBitmapLoaderTask(this, llRoot);
-            task.execute(R.drawable.csbackground);
-        }
     }
 
     @Override
@@ -183,16 +177,28 @@ public class LockScreenActivity extends ThemeableActivity implements ICacheWordS
             if (passphrase.isEmpty()) {
                 // Create DB with empty passphrase
                 if (Imps.setEmptyPassphrase(this, false)) {
-                    IocVfs.init(this, "");
-                    // Simulate cacheword opening
-                    afterCacheWordOpened();
+                    
+                    try
+                    {
+                        ChatFileStore.initWithoutPassword(this);
+
+                        // Simulate cacheword opening
+                        afterCacheWordOpened();
+                    }
+                    catch (Exception e)
+                    {
+                        Log.d(ImApp.LOG_TAG,"unable to mount VFS store"); //but let's not crash the whole app right now
+                    }
+                    
+                    ChatFileStore.initWithoutPassword(this);
+                    
                 }  else {
                     // TODO failed
                 }
             } else {
                 mCacheWord.setPassphrase(passphrase.toCharArray());
             }
-        } catch (GeneralSecurityException e) {
+        } catch (Exception e) {
             // TODO initialization failed
             Log.e(TAG, "Cacheword pass initialization failed: " + e.getMessage());
         }
@@ -429,7 +435,7 @@ public class LockScreenActivity extends ThemeableActivity implements ICacheWordS
     @Override
     public void onCacheWordOpened() {
         afterCacheWordOpened();
-        IocVfs.init(this, new String(Hex.encodeHex(mCacheWord.getEncryptionKey())));
+        ChatFileStore.init(this, mCacheWord.getEncryptionKey());
     }
 
     /**

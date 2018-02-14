@@ -149,7 +149,7 @@ public class Imps {
         public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/imps-providers";
 
         /** The default sort order for this table */
-        public static final String DEFAULT_SORT_ORDER = "name ASC";
+        public static final String DEFAULT_SORT_ORDER = "providers._ID ASC";
     }
 
     /**
@@ -930,6 +930,10 @@ public class Imps {
         /** The content:// style URL for messages by thread id */
         public static final Uri CONTENT_URI_MESSAGES_BY_THREAD_ID = Uri
                 .parse("content://info.guardianproject.otr.app.im.provider.Imps/messagesByThreadId");
+        
+        /** The content:// style URL for messages by thread id */
+        public static final Uri CONTENT_URI_MESSAGES_BY_PACKET_ID = Uri
+                .parse("content://info.guardianproject.otr.app.im.provider.Imps/messagesByPacketId");
 
         /** The content:// style URL for messages by account and contact */
         public static final Uri CONTENT_URI_MESSAGES_BY_ACCOUNT_AND_CONTACT = Uri
@@ -1135,13 +1139,14 @@ public class Imps {
         String PRESENCE_STATUS = "mode";
 
         /** Presence Status definition */
+        
         int OFFLINE = 0;
         int INVISIBLE = 1;
         int AWAY = 2;
         int IDLE = 3;
         int DO_NOT_DISTURB = 4;
         int AVAILABLE = 5;
-
+        
         int NEW_ACCOUNT = -99;
 
 
@@ -1385,6 +1390,7 @@ public class Imps {
          */
         public static final String AUTOMATICALLY_START_SERVICE = "auto_start_service";
 
+        public static final String LINKIFY_ON_TOR = "linkify_on_tor";
         /**
          * Global setting which controls whether the offline contacts will be
          * hid.
@@ -1768,6 +1774,11 @@ public class Imps {
             putBooleanValue(contentResolver, providerId, AUTOMATICALLY_CONNECT_GTALK, autoConnect);
         }
 
+        public static void setLinkifyOnTor(ContentResolver contentResolver, long providerId,
+                boolean linkifyOnTor) {
+            putBooleanValue(contentResolver, providerId, LINKIFY_ON_TOR, linkifyOnTor);
+        }
+
         /**
          * A convenience method to set whether or not the offline contacts
          * should be hided
@@ -2043,6 +2054,14 @@ public class Imps {
 
             public String getOtrMode() {
                 return getString(OTR_MODE, ImApp.DEFAULT_XMPP_OTR_MODE /* by default, try to use OTR */);
+            }
+
+            public void setLinkifyOnTor(boolean value) {
+                ProviderSettings.setLinkifyOnTor(mContentResolver, mProviderId, value);
+            }
+
+            public boolean getLinkifyOnTor() {
+                return getBoolean(LINKIFY_ON_TOR, false /* default do not linkify */);
             }
 
             public void setUseTor(boolean value) {
@@ -2578,7 +2597,7 @@ public class Imps {
             boolean isGroup,
             long contactId,
             boolean isEncrypted,
-            String contact,
+            String nickname,
             String body,
             long time,
             int type,
@@ -2592,7 +2611,7 @@ public class Imps {
         values.put(Imps.Messages.TYPE, type);
         values.put(Imps.Messages.ERROR_CODE, errCode);
         if (isGroup) {
-            values.put(Imps.Messages.NICKNAME, contact);
+            values.put(Imps.Messages.NICKNAME, nickname);
             values.put(Imps.Messages.IS_GROUP_CHAT, 1);
         }
         values.put(Imps.Messages.IS_DELIVERED, 0);

@@ -17,9 +17,6 @@
 
 package info.guardianproject.otr.app.im.app;
 
-import info.guardianproject.otr.app.im.R;
-import info.guardianproject.otr.app.im.provider.Imps;
-import info.guardianproject.util.Languages;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
@@ -27,6 +24,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.database.Cursor;
 import android.media.RingtoneManager;
@@ -38,8 +36,13 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+
+import info.guardianproject.otr.app.im.R;
+import info.guardianproject.otr.app.im.provider.Imps;
+import info.guardianproject.util.Languages;
 
 public class SettingActivity extends PreferenceActivity implements
         OnSharedPreferenceChangeListener {
@@ -48,8 +51,10 @@ public class SettingActivity extends PreferenceActivity implements
     private String currentLanguage;
     ListPreference mOtrMode;
     ListPreference mLanguage;
+    CheckBoxPreference mLinkifyOnTor;
     CheckBoxPreference mHideOfflineContacts;
     CheckBoxPreference mDeleteUnsecuredMedia;
+    CheckBoxPreference mStoreMediaOnExternalStorage;
     CheckBoxPreference mEnableNotification;
     CheckBoxPreference mNotificationVibrate;
     CheckBoxPreference mNotificationSound;
@@ -66,6 +71,7 @@ public class SettingActivity extends PreferenceActivity implements
         Imps.ProviderSettings.QueryMap settings = new Imps.ProviderSettings.QueryMap(pCursor, cr,
                 Imps.ProviderSettings.PROVIDER_ID_FOR_GLOBAL_SETTINGS,     false /* keep updated */, null /* no handler */);
         mOtrMode.setValue(settings.getOtrMode());
+        mLinkifyOnTor.setChecked(settings.getLinkifyOnTor());
         mHideOfflineContacts.setChecked(settings.getHideOfflineContacts());
         mDeleteUnsecuredMedia.setChecked(settings.getDeleteUnsecuredMedia());
         mEnableNotification.setChecked(settings.getEnableNotification());
@@ -79,6 +85,12 @@ public class SettingActivity extends PreferenceActivity implements
         mHeartbeatInterval.setText(String.valueOf(heartbeatInterval));
 
         settings.close();
+
+        /* This uses SharedPreferences since it is used before Imps is setup */
+        SharedPreferences sharedPrefs = PreferenceManager
+                .getDefaultSharedPreferences(getApplicationContext());
+        mStoreMediaOnExternalStorage.setChecked(sharedPrefs.getBoolean(
+                getString(R.string.key_store_media_on_external_storage_pref), false));
     }
 
     /*
@@ -119,12 +131,21 @@ public class SettingActivity extends PreferenceActivity implements
 
         if (key.equals("pref_security_otr_mode")) {
             settings.setOtrMode(prefs.getString(key, "auto"));
+        } else if (key.equals("pref_linkify_on_tor")) {
+            settings.setLinkifyOnTor(prefs.getBoolean(key, false));
         } else if (key.equals("pref_hide_offline_contacts")) {
             settings.setHideOfflineContacts(prefs.getBoolean(key, false));
         } else if (key.equals("pref_delete_unsecured_media")) {
             boolean test = prefs.getBoolean(key, false);
             settings.setDeleteUnsecuredMedia(prefs.getBoolean(key, false));
-        }else if (key.equals("pref_enable_notification")) {
+        } else if (key.equals("pref_store_media_on_external_storage")) {
+            /* This uses SharedPreferences since it is used before Imps is setup */
+            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+            Editor editor = sharedPrefs.edit();
+            editor.putBoolean(getString(R.string.key_store_media_on_external_storage_pref),
+                    prefs.getBoolean(key, false));
+            editor.apply();
+        } else if (key.equals("pref_enable_notification")) {
             settings.setEnableNotification(prefs.getBoolean(key, true));
         } else if (key.equals("pref_notification_vibrate")) {
             settings.setVibrate(prefs.getBoolean(key, true));
@@ -181,8 +202,10 @@ public class SettingActivity extends PreferenceActivity implements
 
         mOtrMode = (ListPreference) findPreference("pref_security_otr_mode");
         mLanguage = (ListPreference) findPreference("pref_language");
+        mLinkifyOnTor = (CheckBoxPreference) findPreference("pref_linkify_on_tor");
         mHideOfflineContacts = (CheckBoxPreference) findPreference("pref_hide_offline_contacts");
         mDeleteUnsecuredMedia = (CheckBoxPreference) findPreference("pref_delete_unsecured_media");
+        mStoreMediaOnExternalStorage = (CheckBoxPreference) findPreference("pref_store_media_on_external_storage");
         mEnableNotification = (CheckBoxPreference) findPreference("pref_enable_notification");
         mNotificationVibrate = (CheckBoxPreference) findPreference("pref_notification_vibrate");
         mNotificationSound = (CheckBoxPreference) findPreference("pref_notification_sound");
@@ -299,6 +322,7 @@ public class SettingActivity extends PreferenceActivity implements
 
         builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
 
+            @Override
             public void onClick(DialogInterface dialog, int which) {
                 Intent intent = new Intent();
                 intent.setType("image/*");

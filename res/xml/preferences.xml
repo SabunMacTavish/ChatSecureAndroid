@@ -23,14 +23,20 @@
   
    <PreferenceCategory android:title="@string/pref_group_security_title">
   
-  <ListPreference android:title="Chat Encryption"
+  <ListPreference android:title="@string/chat_encryption_title"
     android:key="pref_security_otr_mode"
     android:entryValues="@array/otr_options_values"
     android:entries="@array/otr_options"
     android:summary="@string/how_encrypted_chats_are_started"
     android:defaultValue="auto">
   </ListPreference>
-  
+
+  <CheckBoxPreference
+          android:key="pref_linkify_on_tor"
+          android:title="@string/pref_linkify_on_tor_title"
+          android:summary="@string/pref_linkify_on_tor_summary"
+          android:defaultValue="false" />
+
  <!--
    <EditTextPreference 
           android:key="pref_sip_account"
@@ -90,6 +96,13 @@
           android:key="pref_delete_unsecured_media"
           android:title="@string/pref_delete_unsecured_media_title"
           android:summary="@string/pref_delete_unsecured_media_summary"
+          android:defaultValue="false" />
+
+  <CheckBoxPreference
+          android:enabled="false"
+          android:key="pref_store_media_on_external_storage"
+          android:title="@string/pref_store_media_on_external_storage_title"
+          android:summary="@string/pref_store_media_on_external_storage_summary"
           android:defaultValue="false" />
    </PreferenceCategory>
   

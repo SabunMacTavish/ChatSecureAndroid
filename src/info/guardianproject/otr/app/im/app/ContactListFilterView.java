@@ -118,13 +118,11 @@ public class ContactListFilterView extends LinearLayout {
                            // of the selected item
 
                                if (which == 0)
-                               //    mListener.showProfile((Cursor)mFilterList.getItemAtPosition(position));
-                               //else if (which == 1)
                                    setContactNickname(position);
-                               else if (which == 2)
+                               else if (which == 1)
                                    removeContactAtPosition(position);
-                              // else if (which == 3)
-                                //   blockContactAtPosition(position);
+                               else if (which == 2)
+                                  blockContactAtPosition(position);
                        }
 
                 });
@@ -278,6 +276,8 @@ public class ContactListFilterView extends LinearLayout {
 
             holder.mContainer = view.findViewById(R.id.message_container);
 
+            holder.mMediaThumb = (ImageView)view.findViewById(R.id.media_thumbnail);
+            
             view.setTag(holder);
 
            return view;
@@ -366,11 +366,14 @@ public class ContactListFilterView extends LinearLayout {
         DialogInterface.OnClickListener confirmListener = new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 try {
-                    IContactListManager manager = conn.getContactListManager();
-                    int res = manager.removeContact(address);
-                    if (res != ImErrorInfo.NO_ERROR) {
-                        mHandler.showAlert(R.string.error,
-                                ErrorResUtils.getErrorRes(getResources(), res, address));
+                    if (conn != null)
+                    {
+                        IContactListManager manager = conn.getContactListManager();
+                        int res = manager.removeContact(address);
+                        if (res != ImErrorInfo.NO_ERROR) {
+                            mHandler.showAlert(R.string.error,
+                                    ErrorResUtils.getErrorRes(getResources(), res, address));
+                        }
                     }
                 } catch (RemoteException e) {
 
@@ -468,15 +471,16 @@ public class ContactListFilterView extends LinearLayout {
             CursorLoader loader = new CursorLoader(getContext(), mUri, ContactView.CONTACT_PROJECTION,
                     buf == null ? null : buf.toString(), null, Imps.Contacts.DEFAULT_SORT_ORDER);
                         
-       //     loader.setUpdateThrottle(10L);
+            //     loader.setUpdateThrottle(10L);
             return loader;
         }
 
         @Override
         public void onLoadFinished(Loader<Cursor> loader, Cursor newCursor) {
-            
-        //    newCursor.setNotificationUri(getContext().getContentResolver(), mUri);
-            
+            if (newCursor == null)
+                return; // the app was quit or something while this was working
+            newCursor.setNotificationUri(getContext().getContentResolver(), mUri);
+
             mContactAdapter.changeCursor(newCursor);
 
             if (newCursor != null && newCursor.getCount() == 0)

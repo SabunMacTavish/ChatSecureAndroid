@@ -222,6 +222,7 @@ Tappa här för att lägga till ett!</string>
   <string name="transfer_in_progress">Pågående överföring</string>
   <string name="accept_transfer_">Acceptera överföring?</string>
   <string name="wants_to_send_you_the_file">vill skicka dig filen</string>
+  <string name="no_connection_for_sending">Ingen anslutning tillgänglig för att skicka din delning!</string>
   <string name="send">Skicka</string>
   <string name="compose_hint">Skicka ett meddelande</string>
   <string name="compose_hint_secure">Skicka säkert meddelande</string>
@@ -259,9 +260,6 @@ Tappa här för att lägga till ett!</string>
   <string name="empty_contact_list">Inga kontakter funna.
 
 Klicka för att bjuda in.</string>
-  <string name="subscription_prompt"><xliff:g id="USER">%1$s</xliff:g> har bjudit in dig till sin Kontaktlista.</string>
-  <string name="approve_subscription">Acceptera</string>
-  <string name="decline_subscription">Avvisa</string>
   <string name="approve_subscription_error">Det gick inte att godkänna prenumeration från <xliff:g id="USER">%1$s</xliff:g>. Försök igen lite senare.</string>
   <string name="decline_subscription_error">Det gick inte att avvisa prenumeration från <xliff:g id="USER">%1$s</xliff:g>. Försök igen senare.</string>
   <!--Security: OTR-->
@@ -293,6 +291,8 @@ Klicka för att bjuda in.</string>
   <string name="the_remote_key_fingerprint_has_been_verified_">Det avlägsna fingeravtrycket har verifierats!</string>
   <string name="fingerprint_for_you">Fingeravtryck för dig</string>
   <string name="fingerprint_for_">Fingeravtryck för</string>
+  <string name="install_barcode_scanner_title">Installera Barcode Scanner?</string>
+  <string name="install_barcode_scanner_message">Barcode Scanner behövs för denna applikation. Vill du installera den?</string>
   <!--Security: OTR: Verification: QA-->
   <string name="smp_question_title">Autentisering</string>
   <string name="smp_question_summary">Skriv en fråga och skicka till din kontakt, och svaret du förväntas få, för att verifiera att dom verkligen är de dom påstår.</string>
@@ -316,10 +316,12 @@ Klicka för att bjuda in.</string>
   <string name="pref_cacheword_timeout_title">Lösenord timeout</string>
   <string name="pref_cacheword_timeout_summary">Tid som applikationskrypteringen ska vara olåst</string>
   <!--Actions: Settings: General: User Interface-->
+  <string name="pref_linkify_on_tor_title">Klickbara länkar i Tor</string>
+  <string name="pref_linkify_on_tor_summary">För konton som använder Tor, gör länkar i konversationer klickbara (VARNING, möjlig integritetsläcka!)</string>
   <string name="pref_group_looknfeel_title">Användargränssnitt</string>
   <string name="menu_locale">Språk</string>
   <string name="KEY_PREF_LANGUAGE_TITLE">Språk</string>
-
+  <string name="use_system_default">Använd systemets standardinställning</string>
   <string name="pref_theme_dark">Använd mörkt tema</string>
   <string name="pref_theme_dark_summary">Byt till mörkt apptema</string>
   <string name="pref_in_memory_db_title">Endast lagring av meddelanden i minnet</string>
@@ -376,7 +378,7 @@ Nätverkstrafik (även i bakgrunden) krävs för att kunna logga in med appen.</
   <string name="newMessages_label">Nya meddelanden från <xliff:g id="PROVIDER">%1$s</xliff:g></string>
   <string name="num_unread_chats"><xliff:g id="number">%1$d</xliff:g> olästa chattmeddelanden</string>
   <string name="subscription_notify_text">Ny kontaktförfrågan från <xliff:g id="user">%s</xliff:g></string>
-  <string name="file_notify_text">Ny fil <xliff:g id="filename">%s</xliff:g> från <xliff:g id="user">%s</xliff:g></string>
+  <string name="file_notify_text">Ny fil <xliff:g id="filename">%1$s</xliff:g> från <xliff:g id="user">%2$s</xliff:g></string>
   <string name="notify_groupchat_label">Inbjudan till gruppchatt</string>
   <string name="group_chat_invite_notify_text">Ny gruppchattinbjudan från <xliff:g id="user">%s</xliff:g></string>
   <string name="new_messages_notify">Nytt meddelande(n) från</string>
@@ -433,11 +435,12 @@ Nätverkstrafik (även i bakgrunden) krävs för att kunna logga in med appen.</
   <string name="sorry_we_cannot_share_that_file_type">Vi kan tyvärr inte dela denna filtyp</string>
   <string name="err_otr_share_no_encryption">Du måste aktivera kryptering för att dela filer</string>
   <string name="please_enable_chat_encryption_to_share_files">Var vänlig aktivera chattkryptering för att dela filer</string>
+  <string name="unsupported_incoming_data">Ej supporterat inkommande data, kan inte dela!</string>
   <string name="swipe_alert">ChatSecure upptäckte att en begäran gjordes för att ta bort sin uppgift. ChatSecure kommer troligtvis att krascha. Var vänlig använd \"Logga ut alla\" alternativet i menyn från kontolistan istället.</string>
   <string name="there_is_no_viewer_available_for_this_file_format">Det finns ingen visare för detta filformat</string>
   <string name="please_start_a_secure_conversation_before_scanning_codes">Vänligen starta en säker konversation innan avläsning av koder</string>
   <string name="otr_keyring_not_imported_please_check_the_file_exists_in_the_proper_format_and_location">OTR nyckelring ej importerad; Var vänlig kolla att filen existerar i rätt format och på rätt plats</string>
-  <string name="otr_keysync_warning_message">Var vänlig kopiera \'otr_keystore.ofcaes\' filen från OtrFileConverter verktyget till rotkatalogen på din enhet</string>
+  <string name="otr_keysync_warning_message">Var vänlig kopiera \'otr_keystore.ofcaes\' filen från KeySync verktyget till rotkatalogen på din enhet</string>
   <string name="msg_sent_failed">Det gick inte att skicka meddelandet.</string>
   <string name="disconnected_warning">Meddelanden kommer skickas vid återanslutning</string>
   <string name="contact_offline_warning"><xliff:g id="USER_0">%1$s</xliff:g> är offline. Meddelanden som du skickar levereras när <xliff:g id="USER_1">%1$s</xliff:g> är online igen.</string>
@@ -448,8 +451,9 @@ Nätverkstrafik (även i bakgrunden) krävs för att kunna logga in med appen.</
   <string name="error_chat_file_transfer_title">Överföringsfel</string>
   <string name="error_chat_file_transfer_body">Kan inte läsa fil till lagringsplats</string>
   <string name="error_welcome_database">Allvarligt fel: kan inte låsa upp eller ladda appdatabasen. Vänligen installera om appen eller rensa data.</string>
+  <string name="error_no_app_to_handle_url">Ingen installerad applikation kan hantera den länken!</string>
   <string name="account_settings_title">Kontoinställningar</string>
-  <string name="pref_default_locale">defLoc</string>
+
   <string name="warning_alpha">VARNING: Detta är en tidig release av ChatSecure som fortfarande kan innehålla säkerhetshål eller buggar.</string>
   <!--added 2011/09/01-->
   <string name="menu_view_groups">Grupper</string>
@@ -544,7 +548,7 @@ Nätverkstrafik (även i bakgrunden) krävs för att kunna logga in med appen.</
   <string name="i_have_an_existing_xmpp_account">Existerande konto</string>
   <string name="account_existing_full">Anslut till mitt konto på en specifik Jabber / XMPP-server.</string>
   <string name="i_want_to_chat_using_my_google_account">Googlekonto</string>
-  <string name="account_google_full">Chatta med andra Google Hangouts-användare genom din enhets existerande Googlekonto(n).</string>
+  <string name="account_google_full">Chatta med andra Googleanvändare genom ditt existerande Googlekonto.</string>
   <string name="i_want_to_chat_on_my_local_wifi_network_bonjour_zeroconf_">Wifi Mesh Chatt</string>
   <string name="account_wifi_full">Chatta med andra på samma lokala WiFi-nätverk - ingen internetanslutning eller server behövs!</string>
   <string name="account_wifi_button">Aktivera WiFi chatt</string>
@@ -559,8 +563,6 @@ Nätverkstrafik (även i bakgrunden) krävs för att kunna logga in med appen.</
   <string name="resent">[senaste]</string>
   <string name="unable_to_securely_share_this_file">Kan inte dela denna fil säkert</string>
   <string name="install_orbot_">Installera Orbot?</string>
-  <string name="market_orbot">market://search?q=pname:org.torproject.android</string>
-  <string name="you_must_have_orbot">Du måste ha Orbot installerad och aktiverad för att kunna dirigera trafik genom den. Vill du installera Orbot från Google Play?</string>
   <string name="always">Alltid</string>
   <string name="start_orbot_">Starta Orbot?</string>
   <string name="orbot_doesn_t_appear_to_be_running_would_you_like_to_start_it_up_and_connect_to_tor_">Orbot verkar inte köras. Vill du starta Orbot och ansluta till Tor?</string>
@@ -570,4 +572,5 @@ Nätverkstrafik (även i bakgrunden) krävs för att kunna logga in med appen.</
   <string name="your_keystore_is_corrupted_please_re_install_chatsecure_or_clear_data_for_the_app">Din nyckellagring är korrupt. Installera om ChatSecure eller radera data för appen</string>
   <string name="you_received_an_unreadable_encrypted_message">Du tog emot ett oläsbart krypterat meddelande</string>
   <string name="i_could_not_decrypt_the_message_you_sent">Jag kunde inte dekryptera meddelandet du skickade</string>
+  <string name="swipe_hint">&lt; svep vänster och höger för fler alternativ &gt;</string>
 </resources>

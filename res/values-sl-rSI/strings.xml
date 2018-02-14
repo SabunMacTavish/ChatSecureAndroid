@@ -183,9 +183,8 @@ Dotaknite se tu in ga dodajte!</string>
   <string name="menu_invite_contact">Povabi\u2026</string>
   <string name="contacts_picker_title">Izberite kontakt(e), ki jih želite povabiti.</string>
   <string name="contact_filter_hint">Pišite za iskanje kontakta</string>
-  <string name="subscription_prompt"><xliff:g id="user">%1$s</xliff:g> si vas želi dodati na seznam stikov.</string>
-  <string name="approve_subscription">Sprejmi</string>
-  <string name="decline_subscription">Zavrni</string>
+  <string name="approve_subscription">Da</string>
+  <string name="decline_subscription">Ne</string>
   <string name="approve_subscription_error">Ni bilo možno potrditi vpisa od <xliff:g id="user">%1$s</xliff:g>. Poizkusite ponovno kasneje.</string>
   <string name="decline_subscription_error">Ni bilo možno  zavrniti vpisa od <xliff:g id="user">%1$s</xliff:g>. Poizkusite ponovno kasneje.</string>
   <!--Security: OTR-->
@@ -300,7 +299,7 @@ Dotaknite se tu in ga dodajte!</string>
   <string name="contact_offline_warning"><xliff:g id="user">%1$s</xliff:g> ni povezan. Sporočilo, ki ste ga poslali, bo dostavljeno, ko se <xliff:g id="user">%1$s</xliff:g> poveže.</string>
   <string name="contact_not_in_list_warning"><xliff:g id="user">%1$s</xliff:g> ni na seznamu vaših stikov.</string>
   <string name="account_settings_title">Nastavitve računa</string>
-  <string name="pref_default_locale">defLoc</string>
+
   <!--added 2011/09/01-->
   <string name="menu_view_groups">Skupine</string>
   <string name="menu_exit">Izhod</string>

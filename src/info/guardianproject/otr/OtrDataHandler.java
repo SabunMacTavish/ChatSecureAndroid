@@ -5,7 +5,7 @@ import info.guardianproject.iocipher.FileInputStream;
 import info.guardianproject.iocipher.RandomAccessFile;
 import info.guardianproject.otr.app.im.IDataListener;
 import info.guardianproject.otr.app.im.app.ImApp;
-import info.guardianproject.otr.app.im.app.IocVfs;
+import info.guardianproject.otr.app.im.app.ChatFileStore;
 import info.guardianproject.otr.app.im.engine.Address;
 import info.guardianproject.otr.app.im.engine.ChatSession;
 import info.guardianproject.otr.app.im.engine.DataHandler;
@@ -292,13 +292,11 @@ public class OtrDataHandler implements DataHandler {
                     mDataListener.onTransferProgress(true, offer.getId(), requestThem.getAddress(), offer.getUri(),
                         percent);
 
-                    if (percent > .98f)
-                    {
-                        String mimeType = null;
-                        if (req.getFirstHeader("Mime-Type") != null)
-                            mimeType = req.getFirstHeader("Mime-Type").getValue();
-                        mDataListener.onTransferComplete(true, offer.getId(), requestThem.getAddress(), offer.getUri(), mimeType, offer.getUri());
-                    }
+                    String mimeType = null;
+                    if (req.getFirstHeader("Mime-Type") != null)
+                        mimeType = req.getFirstHeader("Mime-Type").getValue();
+                    mDataListener.onTransferComplete(true, offer.getId(), requestThem.getAddress(), offer.getUri(), mimeType, offer.getUri());
+                
                 }
 
             } catch (UnsupportedEncodingException e) {
@@ -443,7 +441,7 @@ public class OtrDataHandler implements DataHandler {
                     //Log.e( TAG, "onIncomingResponse: isDone");
                     debug("Transfer complete for " + request.url);
                     String filename = transfer.closeFile();
-                    Uri vfsUri = IocVfs.vfsUri(filename);
+                    Uri vfsUri = ChatFileStore.vfsUri(filename);
                     if (transfer.checkSum()) {
 
                         //Log.e( TAG, "onIncomingResponse: writing");
@@ -515,7 +513,10 @@ public class OtrDataHandler implements DataHandler {
 
     @Override
     public void offerData(String id, Address us, String localUri, Map<String, String> headers) throws IOException {
+        
         // TODO stash localUri and intended recipient
+        
+        
         long length = new File(localUri).length();
         if (length > MAX_TRANSFER_LENGTH) {
             throw new IOException("Length too large: " + length);
@@ -525,6 +526,7 @@ public class OtrDataHandler implements DataHandler {
         headers.put("File-Length", String.valueOf(length));
 
         try {
+            
             FileInputStream is = new FileInputStream(localUri);
             headers.put("File-Hash-SHA1", sha1sum(is));
             is.close();
@@ -730,7 +732,7 @@ public class OtrDataHandler implements DataHandler {
             debug( "openFile: url " + url) ;
             String sessionId = ""+ mChatId;
             String filename = getFilenameFromUrl(url);
-            localFilename = IocVfs.getDownloadFilename( sessionId, filename );
+            localFilename = ChatFileStore.getDownloadFilename( sessionId, filename );
             debug( "openFile: localFilename " + localFilename) ;
             info.guardianproject.iocipher.RandomAccessFile ras = new info.guardianproject.iocipher.RandomAccessFile(localFilename, "rw");
             return ras;

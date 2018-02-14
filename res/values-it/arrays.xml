@@ -6,10 +6,4 @@
     <item>Se richiesta</item>
     <item>Disabilitata / Mai</item>
   </string-array>
-  <string-array name="otr_options_values">
-    <item>forzato</item>
-    <item>auto</item>
-    <item>richiesto</item>
-    <item>disabilitato</item>
-  </string-array>
 </resources>

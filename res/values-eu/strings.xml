@@ -242,9 +242,6 @@ Hemen ikutu  bat gehitzeko!</string>
   <string name="empty_contact_list">Ez dago kontakturik.
 
 Ikutu gonbidatzeko.</string>
-  <string name="subscription_prompt"><xliff:g id="user">%1$s</xliff:g> erabiltzaileak bere kontaktu zerrendan egoteko gonbidatu zaitu.</string>
-  <string name="approve_subscription">Onartu</string>
-  <string name="decline_subscription">Ukatu</string>
   <string name="approve_subscription_error">Ezin da <xliff:g id="user">%1$s</xliff:g> erabiltzailearen harpidetza onartu. Saiatu geroago mesedez.</string>
   <string name="decline_subscription_error">Ezin da <xliff:g id="user">%1$s</xliff:g> erabiltzailearen harpidetza ukatu. Saiatu geroago mesedez.</string>
   <!--Security: OTR-->
@@ -300,7 +297,6 @@ Ikutu gonbidatzeko.</string>
   <string name="pref_group_looknfeel_title">Erabiltzaile interfazea</string>
   <string name="menu_locale">Hizkuntza</string>
   <string name="KEY_PREF_LANGUAGE_TITLE">Hizkuntzak</string>
-
   <string name="pref_theme_dark">Itxura iluna erabili</string>
   <string name="pref_theme_dark_summary">Aplikazioaren itxura ilunera aldatu</string>
   <string name="pref_in_memory_db_title">Memoriako mezu biltegia bakarrik</string>
@@ -399,13 +395,13 @@ Sareko datuen konektibitatea (baita atzeko planoko datuena) beharrezkoa da aplik
   <string name="there_is_no_viewer_available_for_this_file_format">Ez dago fitxategi mota honentzako aplikaziorik</string>
   <string name="please_start_a_secure_conversation_before_scanning_codes">Mesedez elkarrizketa segurua hasi kodeak eskaneatzen hasi baino lehen</string>
   <string name="otr_keyring_not_imported_please_check_the_file_exists_in_the_proper_format_and_location">Ez da OTR gako parea inportatu; egiaztatu fitxategia formatu eta kokapen egokian dagoela</string>
-  <string name="otr_keysync_warning_message">Mesedez, kopiatu OtrFileConverter ordenagailuko aplikazioak sortuta \'otr_keystore.ofcaes\' fitxategia zure gailuaren biltegiko erro karpetara.</string>
+  <string name="otr_keysync_warning_message">Mesedez, kopiatu KeySync ordenagailuko aplikazioak sortuta \'otr_keystore.ofcaes\' fitxategia zure gailuaren biltegiko erro karpetara.</string>
   <string name="msg_sent_failed">Mezu ezin izan da bidali.</string>
   <string name="disconnected_warning">Mezuak berkonektatzean bidaliko dira</string>
   <string name="contact_offline_warning"><xliff:g id="user">%1$s</xliff:g> erabiltzailea lineaz kanpo dago. Bidaltzen dituzun mezuak<xliff:g id="user">%1$s</xliff:g> konektatzen denean bidaliko zaizkio.</string>
   <string name="contact_not_in_list_warning"><xliff:g id="user">%1$s</xliff:g> ez dago zure kontaktu zerrendan.</string>
   <string name="account_settings_title">Kontu ezarpenak</string>
-  <string name="pref_default_locale">defHizk</string>
+
   <string name="warning_alpha">KONTUZ: ChatSecure-ren bertsio hau kaleratze azkar bat da eta segurtasun zulo edo akatsak eduki ditzake.</string>
   <!--added 2011/09/01-->
   <string name="menu_view_groups">Taldeak</string>

@@ -38,7 +38,7 @@ public class ChatSession {
     private ImEntity mParticipant;
     private ChatSessionManager mManager;
 
-    private OtrChatManager mOtrChatManager;
+   // private OtrChatManager mOtrChatManager;
 
     private MessageListener mListener = null;
     private Vector<Message> mHistoryMessages;
@@ -64,13 +64,14 @@ public class ChatSession {
         mParticipant = participant;
     }
 
+    /*
     public void setOtrChatManager(OtrChatManager otrChatManager) {
         mOtrChatManager = otrChatManager;
     }
 
     public OtrChatManager getOtrChatManager() {
         return mOtrChatManager;
-    }
+    }*/
 
     /**
      * Adds a MessageListener so that it can be notified of any new message in
@@ -80,6 +81,11 @@ public class ChatSession {
      */
     public void setMessageListener(MessageListener listener) {
         mListener = listener;
+    }
+    
+    public MessageListener getMessageListener ()
+    {
+        return mListener;
     }
 
     /**
@@ -104,15 +110,15 @@ public class ChatSession {
      */
     public int sendMessageAsync(Message message) {
 
+        OtrChatManager cm = OtrChatManager.getInstance();
+        SessionID sId = cm.getSessionId(message.getFrom().getAddress(),mParticipant.getAddress().getAddress());
+        SessionStatus otrStatus = cm.getSessionStatus(sId);
 
-        SessionID sId = mOtrChatManager.getSessionId(message.getFrom().getAddress(),mParticipant.getAddress().getAddress());
-        SessionStatus otrStatus = mOtrChatManager.getSessionStatus(sId);
-
-        message.setTo(mParticipant.getAddress());
-
+        message.setTo(new XmppAddress(sId.getRemoteUserId()));
+        
         if (otrStatus == SessionStatus.ENCRYPTED)
         {
-            boolean verified = mOtrChatManager.getKeyManager().isVerified(sId);
+            boolean verified = cm.getKeyManager().isVerified(sId);
 
             if (verified)
             {
@@ -123,19 +129,39 @@ public class ChatSession {
                 message.setType(Imps.MessageType.OUTGOING_ENCRYPTED);
             }
 
+            
         }
         else if (otrStatus == SessionStatus.FINISHED)
         {
-
-            onSendMessageError(message, new ImErrorInfo(ImErrorInfo.INVALID_SESSION_CONTEXT,"Please turn off encryption"));
-            return -1;
+            message.setType(Imps.MessageType.POSTPONED);
+          //  onSendMessageError(message, new ImErrorInfo(ImErrorInfo.INVALID_SESSION_CONTEXT,"error - session finished"));
+            return message.getType();
+        }
+        else
+        {
+            //not encrypted, send to all
+            //message.setTo(new XmppAddress(XmppAddress.stripResource(sId.getRemoteUserId())));        
+            message.setType(Imps.MessageType.OUTGOING);
         }
 
         mHistoryMessages.add(message);
-        mOtrChatManager.transformSending(message);
-        mManager.sendMessageAsync(this, message);
-
+        boolean canSend = cm.transformSending(message);
+        
+        if (canSend)
+        {
+            mManager.sendMessageAsync(this, message);
+        }
+        else
+        {
+            //can't be sent due to OTR state
+            message.setType(Imps.MessageType.POSTPONED);
+            
+        }
+        
         return message.getType();
+
+        
+        
     }
 
     /**
@@ -148,7 +174,9 @@ public class ChatSession {
         if (message.getTo() == null)
             message.setTo(mParticipant.getAddress());
 
-        mOtrChatManager.transformSending(message, isResponse, data);
+        OtrChatManager cm = OtrChatManager.getInstance();
+
+        cm.transformSending(message, isResponse, data);
 
         mManager.sendMessageAsync(this, message);
     }
@@ -165,15 +193,17 @@ public class ChatSession {
     public boolean onReceiveMessage(Message message) {
         mHistoryMessages.add(message);
 
-        if (mOtrChatManager != null)
-        {
-            SessionStatus otrStatus = mOtrChatManager.getSessionStatus(message.getTo().getAddress(), message.getFrom().getAddress());
+        OtrChatManager cm = OtrChatManager.getInstance();
 
-            SessionID sId = mOtrChatManager.getSessionId(message.getTo().getAddress(),message.getFrom().getAddress());
+        if (cm != null)
+        {
+            SessionStatus otrStatus = cm.getSessionStatus(message.getTo().getAddress(), message.getFrom().getAddress());
+
+            SessionID sId = cm.getSessionId(message.getTo().getAddress(),message.getFrom().getAddress());
 
             if (otrStatus == SessionStatus.ENCRYPTED)
             {
-                boolean verified = mOtrChatManager.getKeyManager().isVerified(sId);
+                boolean verified = cm.getKeyManager().isVerified(sId);
 
                 if (verified)
                 {

@@ -54,6 +54,8 @@ public class ContactsPickerActivity extends ActionBarActivity  {
     public final static String EXTRA_RESULT_USERNAME = "result";
     public final static String EXTRA_RESULT_PROVIDER = "provider";
     public final static String EXTRA_RESULT_ACCOUNT = "account";
+    public final static String EXTRA_RESULT_MESSAGE = "message";
+    
 
     private int REQUEST_CODE_ADD_CONTACT = 9999;
 
@@ -62,7 +64,7 @@ public class ContactsPickerActivity extends ActionBarActivity  {
     private MyLoaderCallbacks mLoaderCallbacks;
 
     private ContactListListener mListener = null;
-    private final static Uri mUri = Imps.Contacts.CONTENT_URI_CONTACTS_BY;
+    private Uri mUri = Imps.Contacts.CONTENT_URI_CONTACTS_BY;
 
     private Handler mHandler = new Handler();
 
@@ -82,7 +84,8 @@ public class ContactsPickerActivity extends ActionBarActivity  {
     private LoaderManager.LoaderCallbacks<Cursor> mCallbacks;
 
     private boolean mHideOffline = false;
-
+    private boolean mShowInvitations = false;
+    
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
@@ -90,6 +93,9 @@ public class ContactsPickerActivity extends ActionBarActivity  {
         ((ImApp)getApplication()).setAppTheme(this);
         
         setContentView(R.layout.contacts_picker_activity);
+        
+        if (getIntent().getData() != null)
+            mUri = getIntent().getData();
 
         mListView = (ListView)findViewById(R.id.contactsList);
 
@@ -118,6 +124,13 @@ public class ContactsPickerActivity extends ActionBarActivity  {
         mHideOffline = globalSettings.getHideOfflineContacts();
 
         globalSettings.close();
+        
+        if (getIntent() != null && getIntent().hasExtra("invitations"))
+        {
+            mShowInvitations = getIntent().getBooleanExtra("invitations", false);            
+        }
+        
+        
 
         doFilterAsync("");
     }
@@ -131,38 +144,17 @@ public class ContactsPickerActivity extends ActionBarActivity  {
         if (response == RESULT_OK)
             if (request == REQUEST_CODE_ADD_CONTACT)
             {
-                String newContact = data.getExtras().getString("contact");
+                String newContact = data.getExtras().getString(ContactsPickerActivity.EXTRA_RESULT_USERNAME);
 
                 if (newContact != null)
                 {
-
-                    StringBuilder buf = new StringBuilder();
-
-                    if (mSearchString != null) {
-
-                        buf.append(Imps.Contacts.USERNAME);
-                        buf.append(" LIKE ");
-                        android.database.DatabaseUtils.appendValueToSql(buf, newContact);
-                    }
-
-                    Cursor cursor = getContentResolver().query(Imps.Contacts.CONTENT_URI_CONTACTS_BY, ContactView.CONTACT_PROJECTION,
-                                buf == null ? null : buf.toString(), null, Imps.Contacts.MODE_AND_ALPHA_SORT_ORDER);
-
                     Intent dataNew = new Intent();
+                    
+                    long providerId = data.getExtras().getLong(ContactsPickerActivity.EXTRA_RESULT_PROVIDER);
 
-                    if (cursor.moveToFirst())
-                    {
-
-                        dataNew.putExtra(EXTRA_RESULT_USERNAME, cursor.getString(ContactView.COLUMN_CONTACT_USERNAME));
-                        dataNew.putExtra(EXTRA_RESULT_PROVIDER, cursor.getLong(ContactView.COLUMN_CONTACT_PROVIDER));
-                        dataNew.putExtra(EXTRA_RESULT_ACCOUNT, cursor.getLong(ContactView.COLUMN_CONTACT_ACCOUNT));
-
-                        setResult(RESULT_OK, dataNew);
-                    }
-
-                    if (!cursor.isClosed())
-                        cursor.close();
-
+                    dataNew.putExtra(EXTRA_RESULT_USERNAME, newContact);
+                    dataNew.putExtra(EXTRA_RESULT_PROVIDER, providerId);
+                    setResult(RESULT_OK, dataNew);
 
                     finish();
 
@@ -235,44 +227,6 @@ public class ContactsPickerActivity extends ActionBarActivity  {
             doFilter(query);
     }
 
-    /*
-    public void doFilter(String filterString) {
-        mSearchString = filterString;
-
-        StringBuilder buf = new StringBuilder();
-
-        if (mSearchString != null) {
-
-            buf.append('(');
-            buf.append(Imps.Contacts.NICKNAME);
-            buf.append(" LIKE ");
-            android.database.DatabaseUtils.appendValueToSql(buf, "%" + mSearchString + "%");
-            buf.append(" OR ");
-            buf.append(Imps.Contacts.USERNAME);
-            buf.append(" LIKE ");
-            android.database.DatabaseUtils.appendValueToSql(buf, "%" + mSearchString + "%");
-            buf.append(')');
-            buf.append(" AND ");
-        }
-
-        //normal types not temporary
-        buf.append(Imps.Contacts.TYPE).append('=').append(Imps.Contacts.TYPE_NORMAL);
-
-
-        if(mHideOffline)
-        {
-            buf.append(" AND ");
-            buf.append(Imps.Contacts.PRESENCE_STATUS).append("!=").append(Imps.Presence.OFFLINE);
-
-        }
-
-        mCursor = getContentResolver().query(Imps.Contacts.CONTENT_URI_CONTACTS_BY, ContactView.CONTACT_PROJECTION,
-                    buf == null ? null : buf.toString(), null, Imps.Contacts.ALPHA_SORT_ORDER);
-
-
-
-    }*/
-
     boolean mAwaitingUpdate = false;
 
     public synchronized void doFilter(String filterString) {
@@ -344,6 +298,8 @@ public class ContactsPickerActivity extends ActionBarActivity  {
 
             holder.mContainer = view.findViewById(R.id.message_container);
 
+            holder.mMediaThumb = (ImageView)view.findViewById(R.id.media_thumbnail);
+
             view.setTag(holder);
 
            return view;
@@ -377,18 +333,24 @@ public class ContactsPickerActivity extends ActionBarActivity  {
                 buf.append(" LIKE ");
                 android.database.DatabaseUtils.appendValueToSql(buf, "%" + mSearchString + "%");
                 buf.append(')');
-                buf.append(" AND ");
+                
             }
 
-            //normal types not temporary
+//            normal types not temporary
+            buf.append(" AND ");  
             buf.append(Imps.Contacts.TYPE).append('=').append(Imps.Contacts.TYPE_NORMAL);
 
+            if (mShowInvitations)
+            {
+                buf.append(" AND (");                
+                buf.append(Imps.Contacts.SUBSCRIPTION_TYPE).append('=').append(Imps.Contacts.SUBSCRIPTION_TYPE_FROM);
+                buf.append(" )");
+            }
 
             if(mHideOffline)
             {
                 buf.append(" AND ");
                 buf.append(Imps.Contacts.PRESENCE_STATUS).append("!=").append(Imps.Presence.OFFLINE);
-
             }
 
             CursorLoader loader = new CursorLoader(ContactsPickerActivity.this, mUri, ContactView.CONTACT_PROJECTION,

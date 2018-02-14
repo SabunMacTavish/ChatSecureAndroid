@@ -36,6 +36,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.jivesoftware.smackx.muc.MultiUserChat;
+
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.util.Log;
@@ -83,11 +85,16 @@ public class ChatSessionManagerAdapter extends
         ContactListManagerAdapter listManager = (ContactListManagerAdapter) mConnection
                 .getContactListManager();
 
-        Contact contact = listManager.getContactByAddress(contactAddress);
+        Contact contact = listManager.getContactByAddress(Address.stripResource(contactAddress));
         if (contact == null) {
             try {
-                String[] address = {contactAddress};
-                contact = listManager.createTemporaryContacts(address)[0];
+                
+                contact = new Contact (new XmppAddress(contactAddress),contactAddress);
+                long contactId = listManager.queryOrInsertContact(contact);
+                
+               // String[] address = {Address.stripResource(contactAddress)};
+                //contact = listManager.createTemporaryContacts(address)[0];
+               
             } catch (IllegalArgumentException e) {
                 mSessionListenerAdapter.notifyChatSessionCreateFailed(contactAddress,
                         new ImErrorInfo(ImErrorInfo.ILLEGAL_CONTACT_ADDRESS,
@@ -101,7 +108,14 @@ public class ChatSessionManagerAdapter extends
         return getChatSessionAdapter(session, isNewSession);
     }
 
-    public IChatSession createMultiUserChatSession(String roomAddress, String nickname)
+    public String getDefaultMultiUserChatServer ()
+    {
+        ChatGroupManager groupMan = mConnection.getAdaptee().getChatGroupManager();
+
+        return groupMan.getDefaultMultiUserChatServer();
+    }
+    
+    public IChatSession createMultiUserChatSession(String roomAddress, String nickname, boolean isNewChat)
     {
 
         ChatGroupManager groupMan = mConnection.getAdaptee().getChatGroupManager();
@@ -112,13 +126,18 @@ public class ChatSessionManagerAdapter extends
 
             Address address = new XmppAddress(roomAddress); //TODO hard coding XMPP for now
 
+           // ContactListManagerAdapter listManager = (ContactListManagerAdapter) mConnection
+             //       .getContactListManager();
+
+          //  long contactId = listManager.queryOrInsertContact(new Contact (new XmppAddress(roomAddress),roomAddress));
+            
             ChatGroup chatGroup = groupMan.getChatGroup(address);
 
             if (chatGroup != null)
             {
-                ChatSession session = getChatSessionManager().createChatSession(chatGroup,true);
+                ChatSession session = getChatSessionManager().createChatSession(chatGroup,isNewChat);
 
-                return getChatSessionAdapter(session, true);
+                return getChatSessionAdapter(session, isNewChat);
             }
             else
             {
@@ -165,7 +184,7 @@ public class ChatSessionManagerAdapter extends
         }
     }
 
-    public List getActiveChatSessions() {
+    public List<ChatSessionAdapter> getActiveChatSessions() {
         synchronized (mActiveChatSessionAdapters) {
             return new ArrayList<ChatSessionAdapter>(mActiveChatSessionAdapters.values());
         }

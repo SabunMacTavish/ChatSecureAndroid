@@ -19,15 +19,19 @@ package info.guardianproject.otr.app.im.app;
 
 import info.guardianproject.emoji.EmojiManager;
 import info.guardianproject.otr.app.im.R;
+import info.guardianproject.otr.app.im.engine.Presence;
+import info.guardianproject.otr.app.im.plugin.xmpp.XmppAddress;
 import info.guardianproject.otr.app.im.provider.Imps;
 import info.guardianproject.otr.app.im.ui.ImageViewActivity;
 import info.guardianproject.otr.app.im.ui.LetterAvatar;
 import info.guardianproject.otr.app.im.ui.RoundedAvatarDrawable;
 import info.guardianproject.util.AudioPlayer;
+import info.guardianproject.util.LinkifyHelper;
 import info.guardianproject.util.LogCleaner;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLConnection;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -54,16 +58,17 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.provider.Browser;
 import android.provider.MediaStore;
 import android.support.v4.util.LruCache;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
+import android.text.style.ClickableSpan;
 import android.text.style.ImageSpan;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
 import android.text.style.URLSpan;
-import android.text.util.Linkify;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -74,7 +79,7 @@ import android.widget.Toast;
 
 public class MessageView extends FrameLayout {
 
-    private static int sCacheSize = 512; // 1MiB
+    private static int sCacheSize = 10; // 1MiB
     private static LruCache<String,Bitmap> mBitmapCache = new LruCache<String,Bitmap>(sCacheSize);
 
     public enum DeliveryState {
@@ -88,6 +93,7 @@ public class MessageView extends FrameLayout {
     private CharSequence lastMessage = null;
 
     private Context context;
+    private boolean linkify = false;
 
     public MessageView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -109,7 +115,6 @@ public class MessageView extends FrameLayout {
 
     class ViewHolder
     {
-
         TextView mTextViewForMessages = (TextView) findViewById(R.id.message);
         TextView mTextViewForTimestamp = (TextView) findViewById(R.id.messagets);
         ImageView mAvatar = (ImageView) findViewById(R.id.avatar);
@@ -120,6 +125,11 @@ public class MessageView extends FrameLayout {
         // save the media uri while the MediaScanner is creating the thumbnail
         // if the holder was reused, the pair is broken
         Uri mMediaUri = null;
+
+        ViewHolder() {
+            // disable built-in autoLink so we can add custom ones
+            mTextViewForMessages.setAutoLinkMask(0);
+        }
 
         public void setOnClickListenerMediaThumbnail( final String mimeType, final Uri mediaUri ) {
             mMediaThumbnail.setOnClickListener( new OnClickListener() {
@@ -145,6 +155,38 @@ public class MessageView extends FrameLayout {
        long mTimeDiff = -1;
     }
 
+    /**
+     * This trickery is needed in order to have clickable links that open things
+     * in a new {@code Task} rather than in ChatSecure's {@code Task.} Thanks to @commonsware
+     * https://stackoverflow.com/a/11417498
+     *
+     */
+    class NewTaskUrlSpan extends ClickableSpan {
+
+        private String urlString;
+
+        NewTaskUrlSpan(String urlString) {
+            this.urlString = urlString;
+        }
+
+        @Override
+        public void onClick(View widget) {
+            Uri uri = Uri.parse(urlString);
+            Context context = widget.getContext();
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent);
+        }
+    }
+
+    class URLSpanConverter implements LinkifyHelper.SpanConverter<URLSpan, ClickableSpan> {
+        @Override
+        public NewTaskUrlSpan convert(URLSpan span) {
+            return (new NewTaskUrlSpan(span.getURL()));
+        }
+    }
+
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
@@ -158,11 +200,13 @@ public class MessageView extends FrameLayout {
             setTag(mHolder);
 
         }
-
     }
 
-    public void setMessageBackground (Drawable d)
-    {
+    public void setLinkify(boolean linkify) {
+        this.linkify = linkify;
+    }
+
+    public void setMessageBackground (Drawable d) {
         mHolder.mContainer.setBackgroundDrawable(d);
     }
 
@@ -187,11 +231,8 @@ public class MessageView extends FrameLayout {
 
         if (showContact && nickname != null)
         {
-            String[] nickParts = nickname.split("/");
-
-            lastMessage = nickParts[nickParts.length-1] + ": " + formatMessage(body);
+            lastMessage = nickname + ": " + formatMessage(body);
             showAvatar(address,nickname,true,presenceStatus);
-
         }
         else
         {
@@ -261,9 +302,9 @@ public class MessageView extends FrameLayout {
             //mHolder.mTextViewForTimestamp.setVisibility(View.GONE);
 
         }
-
-        Linkify.addLinks(mHolder.mTextViewForMessages, Linkify.ALL);
-
+        if (linkify)
+            LinkifyHelper.addLinks(mHolder.mTextViewForMessages, new URLSpanConverter());
+        LinkifyHelper.addTorSafeLinks(mHolder.mTextViewForMessages);
     }
 
     private void showMediaThumbnail (String mimeType, Uri mediaUri, int id, ViewHolder holder)
@@ -342,7 +383,7 @@ public class MessageView extends FrameLayout {
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     protected void onClickMediaIcon(String mimeType, Uri mediaUri) {
 
-        if (IocVfs.isVfsUri(mediaUri)) {
+        if (ChatFileStore.isVfsUri(mediaUri)) {
             if (mimeType.startsWith("image")) {
                 Intent intent = new Intent(context, ImageViewActivity.class);
                 intent.putExtra( ImageViewActivity.FILENAME, mediaUri.getPath());
@@ -389,7 +430,7 @@ public class MessageView extends FrameLayout {
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             if (Build.VERSION.SDK_INT >= 11)
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
             //set a general mime type not specific
             intent.setDataAndType(Uri.parse( body ), mimeType);
@@ -409,7 +450,7 @@ public class MessageView extends FrameLayout {
 
     protected void onLongClickMediaIcon(final String mimeType, final Uri mediaUri) {
 
-        final java.io.File exportPath = IocVfs.exportPath(mimeType, mediaUri);
+        final java.io.File exportPath = ChatFileStore.exportPath(mimeType, mediaUri);
 
         new AlertDialog.Builder(context)
         .setTitle(context.getString(R.string.export_media))
@@ -418,7 +459,7 @@ public class MessageView extends FrameLayout {
             @Override
             public void onClick(DialogInterface dialog, int whichButton) {
                 try {
-                    IocVfs.exportContent(mimeType, mediaUri, exportPath);
+                    ChatFileStore.exportContent(mimeType, mediaUri, exportPath);
                     Intent shareIntent = new Intent();
                     shareIntent.setAction(Intent.ACTION_SEND);
                     shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(exportPath));
@@ -502,46 +543,48 @@ public class MessageView extends FrameLayout {
         }.execute();
     }
 
-    public final static int THUMBNAIL_SIZE = 400;
+    public final static int THUMBNAIL_SIZE_DEFAULT = 400;
 
     public static Bitmap getThumbnail(ContentResolver cr, Uri uri) {
      //   Log.e( MessageView.class.getSimpleName(), "getThumbnail uri:" + uri);
-        if (IocVfs.isVfsUri(uri)) {
-            return IocVfs.getThumbnailVfs(cr, uri);
+        if (ChatFileStore.isVfsUri(uri)) {
+            return ChatFileStore.getThumbnailVfs(uri, THUMBNAIL_SIZE_DEFAULT);
         }
-        return getThumbnailFile(cr, uri);
+        return getThumbnailFile(cr, uri, THUMBNAIL_SIZE_DEFAULT);
     }
 
-    public static Bitmap getThumbnailFile(ContentResolver cr, Uri uri) {
+    public static Bitmap getThumbnailFile(ContentResolver cr, Uri uri, int thumbnailSize) {
 
-        java.io.File image = new java.io.File(uri.getPath());
 
-        if (!image.exists())
+        try
         {
-            image = new info.guardianproject.iocipher.File(uri.getPath());
-            if (!image.exists())
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            options.inInputShareable = true;
+            options.inPurgeable = true;
+    
+            InputStream is = cr.openInputStream(uri);
+            BitmapFactory.decodeStream(is, null, options);
+            if ((options.outWidth == -1) || (options.outHeight == -1))
                 return null;
+    
+            int originalSize = (options.outHeight > options.outWidth) ? options.outHeight
+                    : options.outWidth;
+    
+            BitmapFactory.Options opts = new BitmapFactory.Options();
+            opts.inSampleSize = originalSize / thumbnailSize;
+    
+            is = cr.openInputStream(uri);
+         
+            Bitmap scaledBitmap = BitmapFactory.decodeStream(is, null, options);
+    
+            return scaledBitmap;
         }
-
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        options.inInputShareable = true;
-        options.inPurgeable = true;
-
-
-        BitmapFactory.decodeFile(image.getPath(), options);
-        if ((options.outWidth == -1) || (options.outHeight == -1))
+        catch (Exception e)
+        {
+            Log.d(ImApp.LOG_TAG,"could not getThumbnailFile",e);
             return null;
-
-        int originalSize = (options.outHeight > options.outWidth) ? options.outHeight
-                : options.outWidth;
-
-        BitmapFactory.Options opts = new BitmapFactory.Options();
-        opts.inSampleSize = originalSize / THUMBNAIL_SIZE;
-
-        Bitmap scaledBitmap = BitmapFactory.decodeFile(image.getPath(), opts);
-
-        return scaledBitmap;
+        }
     }
 
     private String formatMessage (String body)
@@ -587,32 +630,6 @@ public class MessageView extends FrameLayout {
              }
         }
 
-
-        /**
-        mHolder.mStatusBlock.setVisibility(VISIBLE);
-
-//        mHolder.mMessageContainer.setBackgroundResource(R.drawable.background_plaintext);
-
-        if (encryption == EncryptionState.NONE)
-        {
-
-            mHolder.mStatusBlock.setBackgroundResource(R.color.holo_red_dark);
-
-
-        }
-        else if (encryption == EncryptionState.ENCRYPTED)
-        {
-            mHolder.mStatusBlock.setBackgroundResource(R.color.holo_orange_light);
-
-        }
-
-        else if (encryption == EncryptionState.ENCRYPTED_AND_VERIFIED)
-        {
-            mHolder.mStatusBlock.setBackgroundResource(R.color.holo_green_dark);
-
-        }*/
-
-
         if (date != null)
         {
 
@@ -633,10 +650,9 @@ public class MessageView extends FrameLayout {
             mHolder.mTextViewForTimestamp.setText("");
 
         }
-
-
-        Linkify.addLinks(mHolder.mTextViewForMessages, Linkify.ALL);
-
+        if (linkify)
+            LinkifyHelper.addLinks(mHolder.mTextViewForMessages, new URLSpanConverter());
+        LinkifyHelper.addTorSafeLinks(mHolder.mTextViewForMessages);
     }
 
     private void showAvatar (String address, String nickname, boolean isLeft, int presenceStatus)
@@ -651,7 +667,7 @@ public class MessageView extends FrameLayout {
 
             RoundedAvatarDrawable avatar = null;
 
-            try { avatar = DatabaseUtils.getAvatarFromAddress(this.getContext().getContentResolver(),address, ImApp.DEFAULT_AVATAR_WIDTH,ImApp.DEFAULT_AVATAR_HEIGHT);}
+            try { avatar = DatabaseUtils.getAvatarFromAddress(this.getContext().getContentResolver(),XmppAddress.stripResource(address), ImApp.DEFAULT_AVATAR_WIDTH,ImApp.DEFAULT_AVATAR_HEIGHT);}
             catch (Exception e){}
 
             if (avatar != null)
@@ -670,46 +686,29 @@ public class MessageView extends FrameLayout {
 
                 mHolder.mAvatar.setVisibility(View.VISIBLE);
                 mHolder.mAvatar.setImageDrawable(lavatar);
-                
-                /*
-                if (AVATAR_DEFAULT == null)
-                {
-                    AVATAR_DEFAULT = new RoundedAvatarDrawable(BitmapFactory.decodeResource(getResources(),
-                            R.drawable.avatar_unknown));
-                    
-                    
-                    
-                }
-
-                avatar = AVATAR_DEFAULT;
-                mHolder.mAvatar.setVisibility(View.VISIBLE);
-                mHolder.mAvatar.setImageDrawable(avatar);
-                */
-
             }
-
         }
     }
-    
+
     public int getAvatarBorder(int status) {
         switch (status) {
-        case Imps.Presence.AVAILABLE:
+        case Presence.AVAILABLE:
             return (getResources().getColor(R.color.holo_green_light));
 
-        case Imps.Presence.IDLE:
+        case Presence.IDLE:
             return (getResources().getColor(R.color.holo_green_dark));
-        case Imps.Presence.AWAY:
+        case Presence.AWAY:
             return (getResources().getColor(R.color.holo_orange_light));
 
-        case Imps.Presence.DO_NOT_DISTURB:
+        case Presence.DO_NOT_DISTURB:
             return(getResources().getColor(R.color.holo_red_dark));
 
-        case Imps.Presence.OFFLINE:
+        case Presence.OFFLINE:
             return(getResources().getColor(R.color.holo_grey_dark));
 
         default:
         }
-        
+
         return Color.TRANSPARENT;
     }
 
@@ -749,11 +748,9 @@ public class MessageView extends FrameLayout {
             } else if (delivery == DeliveryState.UNDELIVERED) {
 
                 deliveryText.append(DELIVERED_FAIL);
-
             }
-
         }
-
+        
         if (messageType != Imps.MessageType.POSTPONED)
             deliveryText.append(DELIVERED_SUCCESS);//this is for sent, so we know show 2 checks like WhatsApp!
 
@@ -837,29 +834,29 @@ public class MessageView extends FrameLayout {
 
     public void setAvatarBorder(int status, RoundedAvatarDrawable avatar) {
         switch (status) {
-        case Imps.Presence.AVAILABLE:
+        case Presence.AVAILABLE:
             avatar.setBorderColor(getResources().getColor(R.color.holo_green_light));
             avatar.setAlpha(255);
             break;
 
-        case Imps.Presence.IDLE:
+        case Presence.IDLE:
             avatar.setBorderColor(getResources().getColor(R.color.holo_green_dark));
             avatar.setAlpha(255);
 
             break;
 
-        case Imps.Presence.AWAY:
+        case Presence.AWAY:
             avatar.setBorderColor(getResources().getColor(R.color.holo_orange_light));
             avatar.setAlpha(255);
             break;
 
-        case Imps.Presence.DO_NOT_DISTURB:
+        case Presence.DO_NOT_DISTURB:
             avatar.setBorderColor(getResources().getColor(R.color.holo_red_dark));
             avatar.setAlpha(255);
 
             break;
 
-        case Imps.Presence.OFFLINE:
+        case Presence.OFFLINE:
             avatar.setBorderColor(getResources().getColor(R.color.holo_grey_light));
             avatar.setAlpha(150);
             break;
